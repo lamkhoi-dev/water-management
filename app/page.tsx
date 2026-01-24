@@ -33,10 +33,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-[#e2e2e2] to-[#c9d6ff] flex items-center justify-center p-4">
+    <div className="min-h-screen w-full">
       {/* Main Container */}
       <div 
-        className="relative bg-white rounded-[30px] shadow-[0_5px_15px_rgba(0,0,0,0.35)] overflow-hidden w-[1200px] max-w-[95vw] min-h-[700px]"
+        className="relative bg-white overflow-hidden w-full h-screen"
         id="container"
       >
         {/* Wave Background - nằm sau phần xanh bên phải */}
@@ -67,7 +67,7 @@ export default function LoginPage() {
         <div 
           className="absolute top-0 left-0 h-full w-1/2 flex items-center justify-center z-[2]"
         >
-          <form onSubmit={handleSignIn} className="bg-transparent flex flex-col items-center justify-center px-12 h-full w-full relative z-10">
+          <form onSubmit={handleSignIn} className="bg-transparent flex flex-col items-center justify-center h-full w-full max-w-[400px] mx-auto relative z-10">
             <h1 className="text-3xl font-bold text-gray-800 mb-6">Đăng Nhập</h1>
             
             {error && (
@@ -123,18 +123,21 @@ export default function LoginPage() {
           <div 
             className="bg-gradient-to-r from-[#0ea5e9] to-[#0284c7] text-white relative h-full w-full flex flex-col items-center justify-center px-8 text-center"
           >
-            <div className="mb-8">
+            <div className="mb-10">
               <Image 
                 src="/logo.png" 
                 alt="BIWASE Long An" 
-                width={150} 
-                height={150} 
-                className="object-contain brightness-0 invert"
+                width={220} 
+                height={220} 
+                className="object-contain"
               />
             </div>
-            <h1 className="text-3xl font-bold mb-5">Welcome!</h1>
-            <p className="text-base leading-6 tracking-wide mb-6 opacity-90">
-              Hệ thống quản lý nội bộ BIWASE Long An
+            <h1 className="text-5xl font-bold mb-6">Chào mừng</h1>
+            <p className="text-3xl leading-9 tracking-wide mb-3 font-semibold">
+              Công ty cổ phần Biwase-Long An
+            </p>
+            <p className="text-xl leading-7 tracking-wide opacity-90 italic">
+              Chất lượng tạo nên niềm tin
             </p>
           </div>
         </div>
