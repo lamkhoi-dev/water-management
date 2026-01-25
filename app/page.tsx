@@ -2,6 +2,19 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { Poppins, Inter } from 'next/font/google'
+
+const poppins = Poppins({ 
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+})
+
+const inter = Inter({ 
+  weight: ['300', '400', '500', '600', '700'],
+  subsets: ['latin'],
+  display: 'swap',
+})
 
 const DEMO_ACCOUNTS = [
   { username: 'kho', password: 'password123', role: 'Nhân viên kho', name: 'Nguyễn Văn A' },
@@ -14,6 +27,7 @@ const DEMO_ACCOUNTS = [
 export default function LoginPage() {
   const [signInUsername, setSignInUsername] = useState('')
   const [signInPassword, setSignInPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
 
   const handleSignIn = (e: React.FormEvent) => {
@@ -42,23 +56,23 @@ export default function LoginPage() {
         {/* Wave Background - nằm sau phần xanh bên phải */}
         <div className="absolute bottom-0 left-0 w-full h-full overflow-hidden pointer-events-none z-[2]">
           {/* Wave 1 - xanh đậm nhất - dưới cùng */}
-          <svg className="absolute bottom-0 -left-[10%] w-[95%] h-[35%] wave-animation wave-1" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <svg className="absolute bottom-0 -left-[25%] w-[150%] h-[35%] wave-animation wave-1" viewBox="0 0 1440 320" preserveAspectRatio="none">
             <path fill="#1e40af" d="M0,32L40,58.7C80,85,160,139,240,154.7C320,171,400,149,480,122.7C560,96,640,64,720,74.7C800,85,880,139,960,154.7C1040,171,1120,149,1200,128C1280,107,1360,85,1400,74.7L1440,64L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"></path>
           </svg>
           {/* Wave 2 - xanh vừa */}
-          <svg className="absolute bottom-0 -left-[10%] w-[90%] h-[30%] wave-animation wave-2" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <svg className="absolute bottom-0 -left-[25%] w-[150%] h-[30%] wave-animation wave-2" viewBox="0 0 1440 320" preserveAspectRatio="none">
             <path fill="#2563eb" d="M0,64L40,96C80,128,160,192,240,197.3C320,203,400,149,480,128C560,107,640,117,720,138.7C800,160,880,192,960,186.7C1040,181,1120,139,1200,122.7C1280,107,1360,117,1400,122.7L1440,128L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"></path>
           </svg>
           {/* Wave 3 - xanh nhạt */}
-          <svg className="absolute bottom-0 -left-[10%] w-[85%] h-[25%] wave-animation wave-3" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <svg className="absolute bottom-0 -left-[25%] w-[150%] h-[25%] wave-animation wave-3" viewBox="0 0 1440 320" preserveAspectRatio="none">
             <path fill="#3b82f6" d="M0,96L40,117.3C80,139,160,181,240,186.7C320,192,400,160,480,144C560,128,640,128,720,149.3C800,171,880,213,960,213.3C1040,213,1120,171,1200,149.3C1280,128,1360,128,1400,128L1440,128L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"></path>
           </svg>
           {/* Wave 4 - xanh sky */}
-          <svg className="absolute bottom-0 -left-[10%] w-[80%] h-[18%] wave-animation wave-4" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <svg className="absolute bottom-0 -left-[25%] w-[150%] h-[18%] wave-animation wave-4" viewBox="0 0 1440 320" preserveAspectRatio="none">
             <path fill="#60a5fa" d="M0,128L40,149.3C80,171,160,213,240,218.7C320,224,400,192,480,176C560,160,640,160,720,176C800,192,880,224,960,224C1040,224,1120,192,1200,170.7C1280,149,1360,139,1400,133.3L1440,128L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"></path>
           </svg>
           {/* Wave 5 - xanh nhạt nhất - trên cùng */}
-          <svg className="absolute bottom-0 -left-[10%] w-[75%] h-[12%] wave-animation wave-5" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <svg className="absolute bottom-0 -left-[25%] w-[150%] h-[12%] wave-animation wave-5" viewBox="0 0 1440 320" preserveAspectRatio="none">
             <path fill="#93c5fd" d="M0,160L40,176C80,192,160,224,240,229.3C320,235,400,213,480,192C560,171,640,149,720,160C800,171,880,213,960,218.7C1040,224,1120,192,1200,176C1280,160,1360,160,1400,160L1440,160L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"></path>
           </svg>
         </div>
@@ -93,12 +107,23 @@ export default function LoginPage() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
               </span>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Mật khẩu"
                 value={signInPassword}
                 onChange={(e) => setSignInPassword(e.target.value)}
-                className="bg-gray-100 border-none py-3.5 pl-12 pr-5 text-base rounded-lg w-full outline-none focus:ring-2 focus:ring-[#0ea5e9]"
+                className="bg-gray-100 border-none py-3.5 pl-12 pr-12 text-base rounded-lg w-full outline-none focus:ring-2 focus:ring-[#0ea5e9]"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {showPassword ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                )}
+              </button>
             </div>
             <div className="flex items-center justify-between w-full my-3">
               <label className="flex items-center gap-2 cursor-pointer">
@@ -116,30 +141,27 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* Toggle Container */}
+        {/* Right Side - Logo and Text */}
         <div 
-          className="absolute top-0 left-1/2 w-1/2 h-full overflow-hidden rounded-l-[150px] rounded-bl-[100px] z-[1000]"
+          className={`absolute top-0 left-1/2 w-1/2 h-full flex flex-col items-center justify-center px-8 text-center z-[3] ${poppins.className}`}
+          style={{ paddingBottom: '80px' }}
         >
-          <div 
-            className="bg-gradient-to-r from-[#0ea5e9] to-[#0284c7] text-white relative h-full w-full flex flex-col items-center justify-center px-8 text-center"
-          >
-            <div className="mb-10">
-              <Image 
-                src="/logo.png" 
-                alt="BIWASE Long An" 
-                width={220} 
-                height={220} 
-                className="object-contain"
-              />
-            </div>
-            <h1 className="text-5xl font-bold mb-6">Chào mừng</h1>
-            <p className="text-3xl leading-9 tracking-wide mb-3 font-semibold">
-              Công ty cổ phần Biwase-Long An
-            </p>
-            <p className="text-xl leading-7 tracking-wide opacity-90 italic">
-              Chất lượng tạo nên niềm tin
-            </p>
+          <div className="mb-12">
+            <Image 
+              src="/logo.png" 
+              alt="BIWASE Long An" 
+              width={280} 
+              height={280} 
+              className="object-contain drop-shadow-lg"
+            />
           </div>
+          <h1 className="text-6xl font-bold mb-8 tracking-tight">Chào mừng</h1>
+          <p className="text-4xl leading-relaxed tracking-wide mb-4 font-bold">
+            Công ty cổ phần Biwase-Long An
+          </p>
+          <p className="text-2xl leading-8 tracking-wide opacity-70 font-light" style={{ fontStyle: 'italic' }}>
+            Chất lượng tạo nên niềm tin
+          </p>
         </div>
       </div>
 
@@ -165,10 +187,10 @@ export default function LoginPage() {
         /* Wave animation - chạy qua phải liên tục */
         @keyframes waveFlow {
           0% {
-            transform: translateX(-10%);
+            transform: translateX(-15%);
           }
           100% {
-            transform: translateX(10%);
+            transform: translateX(15%);
           }
         }
         
