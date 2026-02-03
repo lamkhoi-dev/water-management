@@ -5,34 +5,28 @@ import { Sidebar } from '@/components/sidebar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Package, Plus, Edit2, Trash2, Search, X, Save, Warehouse, Factory, ShoppingBag, Building } from 'lucide-react'
+import { Package, Plus, Edit2, Trash2, Search, X, Save, Warehouse, Factory, ShoppingBag, Building, Upload, LogIn, LogOut } from 'lucide-react'
 
 // Dữ liệu mặc định cho 3 kho
-const DEFAULT_WAREHOUSE_DATA: Record<string, any[]> = {
+const DEFAULT_WAREHOUSE_DATA: Record<string, Product[]> = {
   'kho-vat-tu': [
-    { id: 1, name: 'Ống PVC 50mm', category: 'Ống nước', quantity: 250, unit: 'cái', price: 45000 },
-    { id: 2, name: 'Van cầu đôi', category: 'Van', quantity: 45, unit: 'cái', price: 120000 },
-    { id: 3, name: 'Bộ lọc nước', category: 'Thiết bị lọc', quantity: 120, unit: 'bộ', price: 850000 },
-    { id: 4, name: 'Bơm nước 5KW', category: 'Bơm', quantity: 8, unit: 'cái', price: 3500000 },
-    { id: 5, name: 'Thiết bị đo áp suất', category: 'Thiết bị đo', quantity: 30, unit: 'cái', price: 450000 },
-    { id: 6, name: 'Ê cu sắt 2"', category: 'Phụ kiện', quantity: 85, unit: 'cái', price: 15000 },
-    { id: 7, name: 'Đầu nối nylon', category: 'Phụ kiện', quantity: 500, unit: 'cái', price: 8000 },
+    { id: 1, code: 'VT001', name: 'Ống PVC 50mm', unit: 'cái', quantity: 250, priceIn: 40000, priceOut: 45000, weight: 2.5, location: 'Kệ A1', locationImage: '' },
+    { id: 2, code: 'VT002', name: 'Van cầu đôi', unit: 'cái', quantity: 45, priceIn: 100000, priceOut: 120000, weight: 1.2, location: 'Kệ A2', locationImage: '' },
+    { id: 3, code: 'VT003', name: 'Bộ lọc nước', unit: 'bộ', quantity: 120, priceIn: 750000, priceOut: 850000, weight: 5, location: 'Kệ B1', locationImage: '' },
+    { id: 4, code: 'VT004', name: 'Bơm nước 5KW', unit: 'cái', quantity: 8, priceIn: 3000000, priceOut: 3500000, weight: 25, location: 'Khu C', locationImage: '' },
+    { id: 5, code: 'VT005', name: 'Thiết bị đo áp suất', unit: 'cái', quantity: 30, priceIn: 400000, priceOut: 450000, weight: 0.5, location: 'Kệ A3', locationImage: '' },
   ],
   'kho-xay-dung': [
-    { id: 1, name: 'Xi măng PCB40', category: 'Vật liệu xây dựng', quantity: 500, unit: 'bao', price: 95000 },
-    { id: 2, name: 'Thép phi 10', category: 'Thép', quantity: 200, unit: 'cây', price: 180000 },
-    { id: 3, name: 'Gạch ống', category: 'Gạch', quantity: 10000, unit: 'viên', price: 1500 },
-    { id: 4, name: 'Cát xây dựng', category: 'Cát đá', quantity: 50, unit: 'm³', price: 350000 },
-    { id: 5, name: 'Đá 1x2', category: 'Cát đá', quantity: 30, unit: 'm³', price: 420000 },
-    { id: 6, name: 'Ván coffa', category: 'Cốp pha', quantity: 100, unit: 'tấm', price: 85000 },
+    { id: 1, code: 'XD001', name: 'Xi măng PCB40', unit: 'bao', quantity: 500, priceIn: 85000, priceOut: 95000, weight: 50, location: 'Khu D', locationImage: '' },
+    { id: 2, code: 'XD002', name: 'Thép phi 10', unit: 'cây', quantity: 200, priceIn: 160000, priceOut: 180000, weight: 8, location: 'Khu E', locationImage: '' },
+    { id: 3, code: 'XD003', name: 'Gạch ống', unit: 'viên', quantity: 10000, priceIn: 1200, priceOut: 1500, weight: 2, location: 'Khu F', locationImage: '' },
+    { id: 4, code: 'XD004', name: 'Cát xây dựng', unit: 'm³', quantity: 50, priceIn: 300000, priceOut: 350000, weight: 1500, location: 'Bãi G', locationImage: '' },
   ],
   'kho-thuong-mai': [
-    { id: 1, name: 'Đồng hồ nước DN15', category: 'Đồng hồ đo', quantity: 150, unit: 'cái', price: 250000 },
-    { id: 2, name: 'Đồng hồ nước DN20', category: 'Đồng hồ đo', quantity: 100, unit: 'cái', price: 350000 },
-    { id: 3, name: 'Bình lọc nước gia đình', category: 'Thiết bị lọc', quantity: 50, unit: 'bộ', price: 1200000 },
-    { id: 4, name: 'Máy bơm mini', category: 'Bơm', quantity: 25, unit: 'cái', price: 850000 },
-    { id: 5, name: 'Vòi nước inox', category: 'Phụ kiện', quantity: 200, unit: 'cái', price: 180000 },
-    { id: 6, name: 'Bồn chứa nước 1000L', category: 'Bồn chứa', quantity: 15, unit: 'cái', price: 2500000 },
+    { id: 1, code: 'TM001', name: 'Đồng hồ nước DN15', unit: 'cái', quantity: 150, priceIn: 200000, priceOut: 250000, weight: 0.8, location: 'Kệ TM1', locationImage: '' },
+    { id: 2, code: 'TM002', name: 'Đồng hồ nước DN20', unit: 'cái', quantity: 100, priceIn: 300000, priceOut: 350000, weight: 1, location: 'Kệ TM1', locationImage: '' },
+    { id: 3, code: 'TM003', name: 'Bình lọc nước gia đình', unit: 'bộ', quantity: 50, priceIn: 1000000, priceOut: 1200000, weight: 3, location: 'Kệ TM2', locationImage: '' },
+    { id: 4, code: 'TM004', name: 'Máy bơm mini', unit: 'cái', quantity: 25, priceIn: 750000, priceOut: 850000, weight: 5, location: 'Kệ TM3', locationImage: '' },
   ],
 }
 
@@ -44,11 +38,15 @@ const WAREHOUSES = [
 
 interface Product {
   id: number
+  code: string
   name: string
-  category: string
-  quantity: number
   unit: string
-  price: number
+  quantity: number
+  priceIn: number
+  priceOut: number
+  weight: number
+  location: string
+  locationImage: string
 }
 
 export default function WarehousePage() {
@@ -57,13 +55,18 @@ export default function WarehousePage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [warehouseData, setWarehouseData] = useState<Record<string, Product[]>>(DEFAULT_WAREHOUSE_DATA)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [modalType, setModalType] = useState<'import' | 'export'>('import')
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [formData, setFormData] = useState({
+    code: '',
     name: '',
-    category: '',
-    quantity: 0,
     unit: '',
-    price: 0,
+    quantity: 0,
+    priceIn: 0,
+    priceOut: 0,
+    weight: 0,
+    location: '',
+    locationImage: '',
   })
 
   useEffect(() => {
@@ -91,27 +94,40 @@ export default function WarehousePage() {
   const filteredItems = currentItems.filter(
     (item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchTerm.toLowerCase())
+      item.code.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const currentWarehouse = WAREHOUSES.find(w => w.id === selectedWarehouse)
 
-  // Thêm sản phẩm
-  const handleAdd = () => {
+  // Nhập kho
+  const handleImport = () => {
     setEditingProduct(null)
-    setFormData({ name: '', category: '', quantity: 0, unit: '', price: 0 })
+    setModalType('import')
+    setFormData({ code: '', name: '', unit: '', quantity: 0, priceIn: 0, priceOut: 0, weight: 0, location: '', locationImage: '' })
+    setIsModalOpen(true)
+  }
+
+  // Xuất kho (placeholder)
+  const handleExport = () => {
+    setModalType('export')
+    setFormData({ code: '', name: '', unit: '', quantity: 0, priceIn: 0, priceOut: 0, weight: 0, location: '', locationImage: '' })
     setIsModalOpen(true)
   }
 
   // Sửa sản phẩm
   const handleEdit = (product: Product) => {
     setEditingProduct(product)
+    setModalType('import')
     setFormData({
+      code: product.code,
       name: product.name,
-      category: product.category,
-      quantity: product.quantity,
       unit: product.unit,
-      price: product.price,
+      quantity: product.quantity,
+      priceIn: product.priceIn,
+      priceOut: product.priceOut,
+      weight: product.weight,
+      location: product.location,
+      locationImage: product.locationImage,
     })
     setIsModalOpen(true)
   }
@@ -128,8 +144,8 @@ export default function WarehousePage() {
 
   // Lưu sản phẩm (thêm mới hoặc cập nhật)
   const handleSave = () => {
-    if (!formData.name || !formData.category || !formData.unit) {
-      alert('Vui lòng điền đầy đủ thông tin!')
+    if (!formData.code || !formData.name || !formData.unit) {
+      alert('Vui lòng điền đầy đủ thông tin bắt buộc!')
       return
     }
 
@@ -152,12 +168,21 @@ export default function WarehousePage() {
     setIsModalOpen(false)
   }
 
+  // Xử lý upload ảnh
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFormData({ ...formData, locationImage: reader.result as string })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   if (!user) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>
   }
-
-  const totalValue = currentItems.reduce((sum, item) => sum + item.quantity * item.price, 0)
-  const totalItems = currentItems.reduce((sum, item) => sum + item.quantity, 0)
 
   return (
     <div className="flex">
@@ -198,44 +223,6 @@ export default function WarehousePage() {
             })}
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Tổng loại SP</p>
-                    <p className="text-2xl font-bold text-gray-800">{currentItems.length}</p>
-                  </div>
-                  <Package className="w-10 h-10 text-blue-500" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Tổng số lượng</p>
-                    <p className="text-2xl font-bold text-gray-800">{totalItems.toLocaleString()}</p>
-                  </div>
-                  <Warehouse className="w-10 h-10 text-green-500" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="md:col-span-2">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-500">Tổng giá trị kho</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {totalValue.toLocaleString('vi-VN')} VNĐ
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Product Table */}
           <Card className={`border-l-4 ${
               currentWarehouse?.color === 'blue' ? 'border-l-blue-600' :
@@ -250,10 +237,16 @@ export default function WarehousePage() {
                   {currentWarehouse && <currentWarehouse.icon className="w-5 h-5" />}
                   {currentWarehouse?.name}
                 </CardTitle>
-                <Button onClick={handleAdd} className="bg-blue-600 text-white hover:bg-blue-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Thêm Sản Phẩm
-                </Button>
+                <div className="flex gap-2">
+                  <Button onClick={handleImport} className="bg-green-600 text-white hover:bg-green-700">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Nhập Kho
+                  </Button>
+                  <Button onClick={handleExport} className="bg-orange-500 text-white hover:bg-orange-600">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Xuất Kho
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="p-6">
@@ -261,7 +254,7 @@ export default function WarehousePage() {
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
-                  placeholder="Tìm kiếm sản phẩm..."
+                  placeholder="Tìm kiếm theo mã hàng hoặc tên hàng..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 border-2 border-gray-200"
@@ -273,42 +266,53 @@ export default function WarehousePage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">STT</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Tên Sản Phẩm</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Phân Loại</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Mã Hàng</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Tên Hàng</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">ĐVT</th>
                       <th className="text-right py-3 px-4 font-semibold text-gray-700">Số Lượng</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Đơn Giá</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Thành Tiền</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Giá Nhập</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Giá Xuất</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Trọng Lượng</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Vị Trí</th>
                       <th className="text-center py-3 px-4 font-semibold text-gray-700">Thao Tác</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredItems.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="text-center py-8 text-gray-500">
+                        <td colSpan={9} className="text-center py-8 text-gray-500">
                           Không có sản phẩm nào
                         </td>
                       </tr>
                     ) : (
-                      filteredItems.map((item, index) => (
+                      filteredItems.map((item) => (
                         <tr key={item.id} className="border-b hover:bg-gray-50">
-                          <td className="py-3 px-4 text-gray-600">{index + 1}</td>
+                          <td className="py-3 px-4">
+                            <span className="font-mono font-medium text-blue-600">{item.code}</span>
+                          </td>
                           <td className="py-3 px-4">
                             <p className="font-medium text-gray-800">{item.name}</p>
                           </td>
-                          <td className="py-3 px-4">
-                            <span className="px-2 py-1 bg-gray-100 rounded text-gray-600 text-xs">
-                              {item.category}
-                            </span>
-                          </td>
+                          <td className="py-3 px-4 text-gray-600">{item.unit}</td>
                           <td className="py-3 px-4 text-right font-medium text-gray-800">
-                            {item.quantity.toLocaleString()} {item.unit}
+                            {item.quantity.toLocaleString()}
                           </td>
                           <td className="py-3 px-4 text-right text-gray-600">
-                            {item.price.toLocaleString('vi-VN')} VNĐ
+                            {item.priceIn.toLocaleString('vi-VN')} đ
                           </td>
-                          <td className="py-3 px-4 text-right font-medium text-green-600">
-                            {(item.quantity * item.price).toLocaleString('vi-VN')} VNĐ
+                          <td className="py-3 px-4 text-right text-green-600 font-medium">
+                            {item.priceOut.toLocaleString('vi-VN')} đ
+                          </td>
+                          <td className="py-3 px-4 text-right text-gray-600">
+                            {item.weight} kg
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-gray-600">{item.location}</span>
+                              {item.locationImage && (
+                                <img src={item.locationImage} alt="Vị trí" className="w-8 h-8 object-cover rounded" />
+                              )}
+                            </div>
                           </td>
                           <td className="py-3 px-4 text-center">
                             <div className="flex items-center justify-center gap-2">
@@ -342,76 +346,163 @@ export default function WarehousePage() {
           {/* Modal Form */}
           {isModalOpen && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+              <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-gray-800">
-                    {editingProduct ? 'Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới'}
+                    {modalType === 'export' ? 'Xuất Kho' : (editingProduct ? 'Sửa Sản Phẩm' : 'Nhập Kho')}
                   </h2>
                   <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-gray-100 rounded">
                     <X className="w-5 h-5 text-gray-500" />
                   </button>
                 </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Tên sản phẩm *</label>
-                    <Input
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Nhập tên sản phẩm"
-                      className="border-2"
-                    />
+                {modalType === 'export' ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <LogOut className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-lg">Chức năng xuất kho sẽ được triển khai sau</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phân loại *</label>
-                    <Input
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      placeholder="Nhập phân loại"
-                      className="border-2"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Số lượng *</label>
-                      <Input
-                        type="number"
-                        value={formData.quantity}
-                        onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
-                        placeholder="0"
-                        className="border-2"
-                      />
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Mã hàng *</label>
+                        <Input
+                          value={formData.code}
+                          onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                          placeholder="VD: VT001"
+                          className="border-2"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Tên hàng *</label>
+                        <Input
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="Nhập tên hàng"
+                          className="border-2"
+                        />
+                      </div>
                     </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính *</label>
+                        <Input
+                          value={formData.unit}
+                          onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                          placeholder="cái, bộ, kg, m³..."
+                          className="border-2"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
+                        <Input
+                          type="number"
+                          value={formData.quantity}
+                          onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
+                          placeholder="0"
+                          className="border-2"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Giá nhập (VNĐ)</label>
+                        <Input
+                          type="number"
+                          value={formData.priceIn}
+                          onChange={(e) => setFormData({ ...formData, priceIn: Number(e.target.value) })}
+                          placeholder="0"
+                          className="border-2"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Giá xuất (VNĐ)</label>
+                        <Input
+                          type="number"
+                          value={formData.priceOut}
+                          onChange={(e) => setFormData({ ...formData, priceOut: Number(e.target.value) })}
+                          placeholder="0"
+                          className="border-2"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Trọng lượng (kg)</label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          value={formData.weight}
+                          onChange={(e) => setFormData({ ...formData, weight: Number(e.target.value) })}
+                          placeholder="0"
+                          className="border-2"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Vị trí</label>
+                        <Input
+                          value={formData.location}
+                          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                          placeholder="VD: Kệ A1, Khu B..."
+                          className="border-2"
+                        />
+                      </div>
+                    </div>
+
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị *</label>
-                      <Input
-                        value={formData.unit}
-                        onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                        placeholder="cái, bộ, m..."
-                        className="border-2"
-                      />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Ảnh vị trí</label>
+                      <div className="flex gap-4 items-start">
+                        <div className="flex-1">
+                          <Input
+                            value={formData.locationImage}
+                            onChange={(e) => setFormData({ ...formData, locationImage: e.target.value })}
+                            placeholder="Nhập URL ảnh hoặc upload bên dưới"
+                            className="border-2 mb-2"
+                          />
+                          <label className="flex items-center gap-2 px-4 py-2 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
+                            <Upload className="w-5 h-5 text-gray-500" />
+                            <span className="text-sm text-gray-600">Upload ảnh</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageUpload}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                        {formData.locationImage && (
+                          <div className="relative">
+                            <img
+                              src={formData.locationImage}
+                              alt="Preview"
+                              className="w-24 h-24 object-cover rounded-lg border-2 border-gray-200"
+                            />
+                            <button
+                              onClick={() => setFormData({ ...formData, locationImage: '' })}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Đơn giá (VNĐ)</label>
-                    <Input
-                      type="number"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                      placeholder="0"
-                      className="border-2"
-                    />
-                  </div>
-                </div>
+                )}
 
                 <div className="flex gap-3 mt-6">
                   <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1">
                     Hủy
                   </Button>
-                  <Button onClick={handleSave} className="flex-1 bg-blue-600 hover:bg-blue-700">
-                    <Save className="w-4 h-4 mr-2" />
-                    {editingProduct ? 'Cập Nhật' : 'Thêm Mới'}
-                  </Button>
+                  {modalType !== 'export' && (
+                    <Button onClick={handleSave} className="flex-1 bg-green-600 hover:bg-green-700">
+                      <Save className="w-4 h-4 mr-2" />
+                      {editingProduct ? 'Cập Nhật' : 'Nhập Kho'}
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

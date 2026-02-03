@@ -2,14 +2,17 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { User, Package, Users, LogOut as LogOut2, Droplets } from 'lucide-react'
+import { User, Package, Users, LogOut as LogOut2, Droplets, Archive, History, UserCog } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 
 const MENU_ITEMS = [
   { id: 'dashboard', label: 'Thông Tin Nhân Viên', icon: User, href: '/dashboard' },
   { id: 'warehouse', label: 'Quản Lý Kho', icon: Package, href: '/warehouse' },
+  { id: 'inventory', label: 'Tồn Kho', icon: Archive, href: '/inventory' },
+  { id: 'history', label: 'Lịch Sử Kho', icon: History, href: '/history' },
   { id: 'hr', label: 'Quản Lý Nhân Sự', icon: Users, href: '/hr' },
+  { id: 'account', label: 'Tài Khoản', icon: UserCog, href: '/account' },
 ]
 
 export function Sidebar() {
