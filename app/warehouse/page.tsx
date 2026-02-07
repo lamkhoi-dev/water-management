@@ -363,106 +363,96 @@ export default function WarehousePage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Mã hàng *</label>
-                        <Input
-                          value={formData.code}
-                          onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                          placeholder="VD: VT001"
-                          className="border-2"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Tên hàng *</label>
-                        <Input
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          placeholder="Nhập tên hàng"
-                          className="border-2"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính *</label>
-                        <Input
-                          value={formData.unit}
-                          onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                          placeholder="cái, bộ, kg, m³..."
-                          className="border-2"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
-                        <Input
-                          type="number"
-                          value={formData.quantity}
-                          onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
-                          placeholder="0"
-                          className="border-2"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Giá nhập (VNĐ)</label>
-                        <Input
-                          type="number"
-                          value={formData.priceIn}
-                          onChange={(e) => setFormData({ ...formData, priceIn: Number(e.target.value) })}
-                          placeholder="0"
-                          className="border-2"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Giá xuất (VNĐ)</label>
-                        <Input
-                          type="number"
-                          value={formData.priceOut}
-                          onChange={(e) => setFormData({ ...formData, priceOut: Number(e.target.value) })}
-                          placeholder="0"
-                          className="border-2"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Trọng lượng (kg)</label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          value={formData.weight}
-                          onChange={(e) => setFormData({ ...formData, weight: Number(e.target.value) })}
-                          placeholder="0"
-                          className="border-2"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Vị trí</label>
-                        <Input
-                          value={formData.location}
-                          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                          placeholder="VD: Kệ A1, Khu B..."
-                          className="border-2"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Mã hàng *</label>
+                      <Input
+                        value={formData.code}
+                        onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                        placeholder="VD: VT001"
+                        className="border-2"
+                      />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Ảnh vị trí</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Tên hàng *</label>
+                      <Input
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="Nhập tên hàng"
+                        className="border-2"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính *</label>
+                      <Input
+                        value={formData.unit}
+                        onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                        placeholder="cái, bộ, kg, m³..."
+                        className="border-2"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
+                      <Input
+                        type="number"
+                        value={formData.quantity}
+                        onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
+                        placeholder="0"
+                        className="border-2"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Giá nhập (VNĐ)</label>
+                      <Input
+                        type="number"
+                        value={formData.priceIn}
+                        onChange={(e) => setFormData({ ...formData, priceIn: Number(e.target.value) })}
+                        placeholder="0"
+                        className="border-2"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Giá xuất (VNĐ)</label>
+                      <Input
+                        type="number"
+                        value={formData.priceOut}
+                        onChange={(e) => setFormData({ ...formData, priceOut: Number(e.target.value) })}
+                        placeholder="0"
+                        className="border-2"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Trọng lượng (kg)</label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={formData.weight}
+                        onChange={(e) => setFormData({ ...formData, weight: Number(e.target.value) })}
+                        placeholder="0"
+                        className="border-2"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Vị trí</label>
+                      <Input
+                        value={formData.location}
+                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                        placeholder="VD: Kệ A1, Khu B..."
+                        className="border-2"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Ảnh vị trí</label>
                       <div className="flex gap-4 items-start">
                         <div className="flex-1">
-                          <Input
-                            value={formData.locationImage}
-                            onChange={(e) => setFormData({ ...formData, locationImage: e.target.value })}
-                            placeholder="Nhập URL ảnh hoặc upload bên dưới"
-                            className="border-2 mb-2"
-                          />
-                          <label className="flex items-center gap-2 px-4 py-2 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
+                          <label className="flex items-center gap-2 px-4 py-3 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
                             <Upload className="w-5 h-5 text-gray-500" />
                             <span className="text-sm text-gray-600">Upload ảnh</span>
                             <input
