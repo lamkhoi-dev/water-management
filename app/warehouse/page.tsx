@@ -10,23 +10,23 @@ import { Package, Plus, Edit2, Trash2, Search, X, Save, Warehouse, Factory, Shop
 // Dữ liệu mặc định cho 3 kho
 const DEFAULT_WAREHOUSE_DATA: Record<string, Product[]> = {
   'kho-vat-tu': [
-    { id: 1, code: 'VT001', name: 'Ống PVC 50mm', unit: 'cái', quantity: 250, priceIn: 40000, priceOut: 45000, weight: 2.5, location: 'Kệ A1', locationImage: '' },
-    { id: 2, code: 'VT002', name: 'Van cầu đôi', unit: 'cái', quantity: 45, priceIn: 100000, priceOut: 120000, weight: 1.2, location: 'Kệ A2', locationImage: '' },
-    { id: 3, code: 'VT003', name: 'Bộ lọc nước', unit: 'bộ', quantity: 120, priceIn: 750000, priceOut: 850000, weight: 5, location: 'Kệ B1', locationImage: '' },
-    { id: 4, code: 'VT004', name: 'Bơm nước 5KW', unit: 'cái', quantity: 8, priceIn: 3000000, priceOut: 3500000, weight: 25, location: 'Khu C', locationImage: '' },
-    { id: 5, code: 'VT005', name: 'Thiết bị đo áp suất', unit: 'cái', quantity: 30, priceIn: 400000, priceOut: 450000, weight: 0.5, location: 'Kệ A3', locationImage: '' },
+    { id: 1, code: 'VT001', name: 'Ống PVC 50mm', unit: 'cái', quantity: 250, priceIn: 40000, priceOut: 45000, weight: 2.5, location: 'Kệ A1', locationImage: '', importDate: '2024-01-15' },
+    { id: 2, code: 'VT002', name: 'Van cầu đôi', unit: 'cái', quantity: 45, priceIn: 100000, priceOut: 120000, weight: 1.2, location: 'Kệ A2', locationImage: '', importDate: '2024-01-20' },
+    { id: 3, code: 'VT003', name: 'Bộ lọc nước', unit: 'bộ', quantity: 120, priceIn: 750000, priceOut: 850000, weight: 5, location: 'Kệ B1', locationImage: '', importDate: '2024-02-01' },
+    { id: 4, code: 'VT004', name: 'Bơm nước 5KW', unit: 'cái', quantity: 8, priceIn: 3000000, priceOut: 3500000, weight: 25, location: 'Khu C', locationImage: '', importDate: '2024-02-05' },
+    { id: 5, code: 'VT005', name: 'Thiết bị đo áp suất', unit: 'cái', quantity: 30, priceIn: 400000, priceOut: 450000, weight: 0.5, location: 'Kệ A3', locationImage: '', importDate: '2024-02-10' },
   ],
   'kho-xay-dung': [
-    { id: 1, code: 'XD001', name: 'Xi măng PCB40', unit: 'bao', quantity: 500, priceIn: 85000, priceOut: 95000, weight: 50, location: 'Khu D', locationImage: '' },
-    { id: 2, code: 'XD002', name: 'Thép phi 10', unit: 'cây', quantity: 200, priceIn: 160000, priceOut: 180000, weight: 8, location: 'Khu E', locationImage: '' },
-    { id: 3, code: 'XD003', name: 'Gạch ống', unit: 'viên', quantity: 10000, priceIn: 1200, priceOut: 1500, weight: 2, location: 'Khu F', locationImage: '' },
-    { id: 4, code: 'XD004', name: 'Cát xây dựng', unit: 'm³', quantity: 50, priceIn: 300000, priceOut: 350000, weight: 1500, location: 'Bãi G', locationImage: '' },
+    { id: 1, code: 'XD001', name: 'Xi măng PCB40', unit: 'bao', quantity: 500, priceIn: 85000, priceOut: 95000, weight: 50, location: 'Khu D', locationImage: '', importDate: '2024-01-10' },
+    { id: 2, code: 'XD002', name: 'Thép phi 10', unit: 'cây', quantity: 200, priceIn: 160000, priceOut: 180000, weight: 8, location: 'Khu E', locationImage: '', importDate: '2024-01-18' },
+    { id: 3, code: 'XD003', name: 'Gạch ống', unit: 'viên', quantity: 10000, priceIn: 1200, priceOut: 1500, weight: 2, location: 'Khu F', locationImage: '', importDate: '2024-01-25' },
+    { id: 4, code: 'XD004', name: 'Cát xây dựng', unit: 'm³', quantity: 50, priceIn: 300000, priceOut: 350000, weight: 1500, location: 'Bãi G', locationImage: '', importDate: '2024-02-03' },
   ],
   'kho-thuong-mai': [
-    { id: 1, code: 'TM001', name: 'Đồng hồ nước DN15', unit: 'cái', quantity: 150, priceIn: 200000, priceOut: 250000, weight: 0.8, location: 'Kệ TM1', locationImage: '' },
-    { id: 2, code: 'TM002', name: 'Đồng hồ nước DN20', unit: 'cái', quantity: 100, priceIn: 300000, priceOut: 350000, weight: 1, location: 'Kệ TM1', locationImage: '' },
-    { id: 3, code: 'TM003', name: 'Bình lọc nước gia đình', unit: 'bộ', quantity: 50, priceIn: 1000000, priceOut: 1200000, weight: 3, location: 'Kệ TM2', locationImage: '' },
-    { id: 4, code: 'TM004', name: 'Máy bơm mini', unit: 'cái', quantity: 25, priceIn: 750000, priceOut: 850000, weight: 5, location: 'Kệ TM3', locationImage: '' },
+    { id: 1, code: 'TM001', name: 'Đồng hồ nước DN15', unit: 'cái', quantity: 150, priceIn: 200000, priceOut: 250000, weight: 0.8, location: 'Kệ TM1', locationImage: '', importDate: '2024-01-12' },
+    { id: 2, code: 'TM002', name: 'Đồng hồ nước DN20', unit: 'cái', quantity: 100, priceIn: 300000, priceOut: 350000, weight: 1, location: 'Kệ TM1', locationImage: '', importDate: '2024-01-22' },
+    { id: 3, code: 'TM003', name: 'Bình lọc nước gia đình', unit: 'bộ', quantity: 50, priceIn: 1000000, priceOut: 1200000, weight: 3, location: 'Kệ TM2', locationImage: '', importDate: '2024-01-28' },
+    { id: 4, code: 'TM004', name: 'Máy bơm mini', unit: 'cái', quantity: 25, priceIn: 750000, priceOut: 850000, weight: 5, location: 'Kệ TM3', locationImage: '', importDate: '2024-02-06' },
   ],
 }
 
@@ -47,6 +47,7 @@ interface Product {
   weight: number
   location: string
   locationImage: string
+  importDate: string
 }
 
 export default function WarehousePage() {
@@ -54,9 +55,14 @@ export default function WarehousePage() {
   const [selectedWarehouse, setSelectedWarehouse] = useState('kho-vat-tu')
   const [searchTerm, setSearchTerm] = useState('')
   const [warehouseData, setWarehouseData] = useState<Record<string, Product[]>>(DEFAULT_WAREHOUSE_DATA)
+  const [deletedProducts, setDeletedProducts] = useState<Record<string, Product[]>>({ 'kho-vat-tu': [], 'kho-xay-dung': [], 'kho-thuong-mai': [] })
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'import' | 'export'>('import')
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [exportCodeInput, setExportCodeInput] = useState('')
+  const [foundProduct, setFoundProduct] = useState<Product | null>(null)
+  const [exportQuantity, setExportQuantity] = useState(0)
+  const [exportPrice, setExportPrice] = useState(0)
   const [formData, setFormData] = useState({
     code: '',
     name: '',
@@ -67,6 +73,7 @@ export default function WarehousePage() {
     weight: 0,
     location: '',
     locationImage: '',
+    importDate: new Date().toISOString().split('T')[0],
   })
 
   useEffect(() => {
@@ -83,12 +90,23 @@ export default function WarehousePage() {
     if (savedData) {
       setWarehouseData(JSON.parse(savedData))
     }
+
+    // Load deleted products
+    const savedDeleted = localStorage.getItem('deletedProducts')
+    if (savedDeleted) {
+      setDeletedProducts(JSON.parse(savedDeleted))
+    }
   }, [])
 
   // Lưu data vào localStorage khi thay đổi
   useEffect(() => {
     localStorage.setItem('warehouseData', JSON.stringify(warehouseData))
   }, [warehouseData])
+
+  // Lưu deleted products vào localStorage
+  useEffect(() => {
+    localStorage.setItem('deletedProducts', JSON.stringify(deletedProducts))
+  }, [deletedProducts])
 
   const currentItems = warehouseData[selectedWarehouse] || []
   const filteredItems = currentItems.filter(
@@ -103,15 +121,64 @@ export default function WarehousePage() {
   const handleImport = () => {
     setEditingProduct(null)
     setModalType('import')
-    setFormData({ code: '', name: '', unit: '', quantity: 0, priceIn: 0, priceOut: 0, weight: 0, location: '', locationImage: '' })
+    setFormData({ code: '', name: '', unit: '', quantity: 0, priceIn: 0, priceOut: 0, weight: 0, location: '', locationImage: '', importDate: new Date().toISOString().split('T')[0] })
     setIsModalOpen(true)
   }
 
-  // Xuất kho (placeholder)
+  // Xuất kho
   const handleExport = () => {
     setModalType('export')
-    setFormData({ code: '', name: '', unit: '', quantity: 0, priceIn: 0, priceOut: 0, weight: 0, location: '', locationImage: '' })
+    setExportCodeInput('')
+    setFoundProduct(null)
+    setExportQuantity(0)
+    setExportPrice(0)
     setIsModalOpen(true)
+  }
+
+  // Tìm sản phẩm khi nhập mã
+  const handleSearchExportCode = (code: string) => {
+    const upperCode = code.toUpperCase()
+    setExportCodeInput(upperCode)
+    
+    const product = currentItems.find(p => p.code === upperCode)
+    if (product) {
+      setFoundProduct(product)
+      setExportQuantity(0)
+      setExportPrice(product.priceOut)
+    } else {
+      setFoundProduct(null)
+      setExportQuantity(0)
+      setExportPrice(0)
+    }
+  }
+
+  // Xác nhận xuất kho
+  const handleConfirmExport = () => {
+    if (!foundProduct) {
+      alert('Không tìm thấy sản phẩm!')
+      return
+    }
+    if (exportQuantity <= 0) {
+      alert('Số lượng xuất phải lớn hơn 0!')
+      return
+    }
+    if (exportQuantity > foundProduct.quantity) {
+      alert(`Số lượng tồn kho không đủ! Hiện có: ${foundProduct.quantity} ${foundProduct.unit}`)
+      return
+    }
+
+    // Cập nhật số lượng trong kho
+    setWarehouseData(prev => ({
+      ...prev,
+      [selectedWarehouse]: prev[selectedWarehouse].map(p =>
+        p.id === foundProduct.id 
+          ? { ...p, quantity: p.quantity - exportQuantity }
+          : p
+      )
+    }))
+
+    alert(`Đã xuất ${exportQuantity} ${foundProduct.unit} ${foundProduct.name}`)
+    setIsModalOpen(false)
   }
 
   // Sửa sản phẩm
@@ -128,17 +195,27 @@ export default function WarehousePage() {
       weight: product.weight,
       location: product.location,
       locationImage: product.locationImage,
+      importDate: product.importDate,
     })
     setIsModalOpen(true)
   }
 
-  // Xóa sản phẩm
+  // Xóa sản phẩm (chuyển sang deletedProducts)
   const handleDelete = (productId: number) => {
     if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
-      setWarehouseData(prev => ({
-        ...prev,
-        [selectedWarehouse]: prev[selectedWarehouse].filter(p => p.id !== productId)
-      }))
+      const productToDelete = currentItems.find(p => p.id === productId)
+      if (productToDelete) {
+        // Chuyển sang deletedProducts
+        setDeletedProducts(prev => ({
+          ...prev,
+          [selectedWarehouse]: [...prev[selectedWarehouse], productToDelete]
+        }))
+        // Xóa khỏi warehouseData
+        setWarehouseData(prev => ({
+          ...prev,
+          [selectedWarehouse]: prev[selectedWarehouse].filter(p => p.id !== productId)
+        }))
+      }
     }
   }
 
@@ -345,8 +422,8 @@ export default function WarehousePage() {
 
           {/* Modal Form */}
           {isModalOpen && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className={`bg-white rounded-xl p-6 w-full shadow-2xl max-h-[90vh] overflow-y-auto ${modalType === 'export' ? 'max-w-5xl' : 'max-w-4xl'}`}>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-gray-800">
                     {modalType === 'export' ? 'Xuất Kho' : (editingProduct ? 'Sửa Sản Phẩm' : 'Nhập Kho')}
@@ -357,9 +434,143 @@ export default function WarehousePage() {
                 </div>
 
                 {modalType === 'export' ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <LogOut className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                    <p className="text-lg">Chức năng xuất kho sẽ được triển khai sau</p>
+                  <div className="space-y-4">
+                    {/* Input mã hàng */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Nhập mã hàng cần xuất</label>
+                      <Input
+                        value={exportCodeInput}
+                        onChange={(e) => handleSearchExportCode(e.target.value)}
+                        placeholder="Nhập mã hàng (VD: VT001)"
+                        className="border-2 text-xl font-bold tracking-wider"
+                        style={{ fontFamily: 'monospace', textTransform: 'uppercase' }}
+                        autoFocus
+                      />
+                    </div>
+
+                    {/* Nếu không tìm thấy */}
+                    {exportCodeInput && !foundProduct && (
+                      <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-center">
+                        <p className="text-red-600 font-medium">❌ Không tìm thấy sản phẩm có mã "{exportCodeInput}"</p>
+                      </div>
+                    )}
+
+                    {/* Nếu tìm thấy - Hiển thị 2 cột */}
+                    {foundProduct && (
+                      <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50">
+                        <p className="text-green-600 font-medium mb-4">✓ Tìm thấy sản phẩm</p>
+                        
+                        {/* 2 cột: TTSP và Xuất */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {/* Cột 1: TTSP */}
+                          <div className="bg-white rounded-lg p-4 border-2">
+                            <h3 className="font-bold text-blue-600 mb-3 text-lg border-b pb-2">THÔNG TIN SẢN PHẨM</h3>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Mã hàng:</span>
+                                <span className="font-mono font-bold text-blue-600">{foundProduct.code}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Tên hàng:</span>
+                                <span className="font-medium">{foundProduct.name}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Đơn vị tính:</span>
+                                <span>{foundProduct.unit}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Tồn kho:</span>
+                                <span className="font-bold text-green-600">{foundProduct.quantity.toLocaleString()} {foundProduct.unit}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Giá nhập:</span>
+                                <span>{foundProduct.priceIn.toLocaleString('vi-VN')} đ</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Giá xuất:</span>
+                                <span className="font-medium">{foundProduct.priceOut.toLocaleString('vi-VN')} đ</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Trọng lượng:</span>
+                                <span>{foundProduct.weight} kg</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Vị trí:</span>
+                                <span>{foundProduct.location}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Ngày nhập:</span>
+                                <span>{foundProduct.importDate}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Cột 2: Xuất */}
+                          <div className="bg-white rounded-lg p-4 border-2 border-orange-200">
+                            <h3 className="font-bold text-orange-600 mb-3 text-lg border-b pb-2">THÔNG TIN XUẤT KHO</h3>
+                            
+                            {/* Ảnh sản phẩm */}
+                            {foundProduct.locationImage && (
+                              <div className="mb-4">
+                                <img 
+                                  src={foundProduct.locationImage} 
+                                  alt={foundProduct.name}
+                                  className="w-full h-48 object-cover rounded-lg border-2"
+                                />
+                              </div>
+                            )}
+
+                            <div className="space-y-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Số lượng xuất * (Tồn: {foundProduct.quantity} {foundProduct.unit})
+                                </label>
+                                <Input
+                                  type="number"
+                                  value={exportQuantity}
+                                  onChange={(e) => setExportQuantity(Number(e.target.value))}
+                                  placeholder="0"
+                                  className="border-2 text-lg"
+                                  max={foundProduct.quantity}
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Giá xuất (VNĐ)</label>
+                                <Input
+                                  type="number"
+                                  value={exportPrice}
+                                  onChange={(e) => setExportPrice(Number(e.target.value))}
+                                  placeholder="0"
+                                  className="border-2 text-lg"
+                                />
+                              </div>
+
+                              {/* Tổng giá trị */}
+                              <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                <div className="flex justify-between items-center">
+                                  <span className="font-medium text-gray-700">Tổng giá trị:</span>
+                                  <span className="text-xl font-bold text-orange-600">
+                                    {(exportQuantity * exportPrice).toLocaleString('vi-VN')} đ
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Button xuất */}
+                        <div className="mt-4 flex gap-3">
+                          <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1">
+                            Hủy
+                          </Button>
+                          <Button onClick={handleConfirmExport} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white">
+                            <LogOut className="w-4 h-4 mr-2" />
+                            Xác Nhận Xuất Kho
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -449,6 +660,16 @@ export default function WarehousePage() {
                     </div>
 
                     <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Ngày nhập kho</label>
+                      <Input
+                        type="date"
+                        value={formData.importDate}
+                        onChange={(e) => setFormData({ ...formData, importDate: e.target.value })}
+                        className="border-2"
+                      />
+                    </div>
+
+                    <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Ảnh vị trí</label>
                       <div className="flex gap-4 items-start">
                         <div className="flex-1">
@@ -480,20 +701,18 @@ export default function WarehousePage() {
                         )}
                       </div>
                     </div>
+
+                    <div className="flex gap-3 mt-6">
+                      <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1">
+                        Hủy
+                      </Button>
+                      <Button onClick={handleSave} className="flex-1 bg-green-600 hover:bg-green-700">
+                        <Save className="w-4 h-4 mr-2" />
+                        {editingProduct ? 'Cập Nhật' : 'Nhập Kho'}
+                      </Button>
+                    </div>
                   </div>
                 )}
-
-                <div className="flex gap-3 mt-6">
-                  <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1">
-                    Hủy
-                  </Button>
-                  {modalType !== 'export' && (
-                    <Button onClick={handleSave} className="flex-1 bg-green-600 hover:bg-green-700">
-                      <Save className="w-4 h-4 mr-2" />
-                      {editingProduct ? 'Cập Nhật' : 'Nhập Kho'}
-                    </Button>
-                  )}
-                </div>
               </div>
             </div>
           )}
