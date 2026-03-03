@@ -3,10 +3,26 @@
 import { useEffect, useState } from 'react'
 import { Sidebar } from '@/components/sidebar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { History } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { History, Search, Calendar } from 'lucide-react'
+
+interface HistoryEntry {
+  date: string
+  time: string
+  warehouse: string
+  productCode: string
+  productName: string
+  userName: string
+  action: string
+  quantity: number
+}
 
 export default function HistoryPage() {
   const [user, setUser] = useState<any>(null)
+  const [historyLog, setHistoryLog] = useState<HistoryEntry[]>([])
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -16,7 +32,47 @@ export default function HistoryPage() {
     }
     const parsed = JSON.parse(userData)
     setUser(parsed)
+
+    // Load history log from localStorage
+    const savedHistory = localStorage.getItem('historyLog')
+    if (savedHistory) {
+      setHistoryLog(JSON.parse(savedHistory))
+    }
   }, [])
+
+  // Lọc theo khoảng ngày
+  const filteredHistory = historyLog.filter((entry) => {
+    if (!dateFrom && !dateTo) return true
+    
+    // Parse entry date (format: dd/mm/yyyy or yyyy-mm-dd)
+    const parts = entry.date.includes('/') ? entry.date.split('/') : entry.date.split('-')
+    let entryDate: Date
+    if (entry.date.includes('/')) {
+      entryDate = new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]))
+    } else {
+      entryDate = new Date(entry.date)
+    }
+
+    if (dateFrom) {
+      const from = new Date(dateFrom)
+      if (entryDate < from) return false
+    }
+    if (dateTo) {
+      const to = new Date(dateTo)
+      to.setHours(23, 59, 59)
+      if (entryDate > to) return false
+    }
+    return true
+  })
+
+  const getActionColor = (action: string) => {
+    switch (action) {
+      case 'Nhập kho': return 'bg-green-100 text-green-700'
+      case 'Xuất kho': return 'bg-orange-100 text-orange-700'
+      case 'Tồn kho': return 'bg-blue-100 text-blue-700'
+      default: return 'bg-gray-100 text-gray-700'
+    }
+  }
 
   if (!user) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>
@@ -33,16 +89,96 @@ export default function HistoryPage() {
             <p className="text-gray-600">Xem lịch sử nhập xuất kho, biến động số lượng</p>
           </div>
 
-          {/* Empty State */}
+          {/* Date Filter */}
+          <Card className="mb-6">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700">Lọc theo ngày:</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-gray-600">Từ:</label>
+                  <Input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="border-2 w-44"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-gray-600">Đến:</label>
+                  <Input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="border-2 w-44"
+                  />
+                </div>
+                {(dateFrom || dateTo) && (
+                  <Button variant="outline" size="sm" onClick={() => { setDateFrom(''); setDateTo('') }}>
+                    Xóa bộ lọc
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* History Table */}
           <Card className="border-l-4 border-l-orange-500">
-            <CardContent className="p-12">
-              <div className="text-center">
-                <History className="w-24 h-24 mx-auto mb-6 text-gray-300" />
-                <h2 className="text-2xl font-semibold text-gray-600 mb-2">Chức năng đang phát triển</h2>
-                <p className="text-gray-500 max-w-md mx-auto">
-                  Chức năng Lịch Sử Kho sẽ được triển khai trong các phiên bản tiếp theo. 
-                  Tính năng này sẽ ghi lại đầy đủ các giao dịch nhập xuất kho, giúp bạn tra cứu và báo cáo dễ dàng.
-                </p>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-orange-600">
+                <History className="w-5 h-5" />
+                Lịch Sử Hoạt Động ({filteredHistory.length} bản ghi)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Ngày/tháng/năm</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Thời gian</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Kho lưu</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Mã sản phẩm</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Tên sản phẩm</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Họ và tên</th>
+                      <th className="text-center py-3 px-4 font-semibold text-gray-700">Thao tác</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Số lượng</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredHistory.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="text-center py-12 text-gray-500">
+                          <History className="w-16 h-16 mx-auto mb-2 text-gray-300" />
+                          <p>Chưa có lịch sử hoạt động</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      [...filteredHistory].reverse().map((entry, index) => (
+                        <tr key={index} className="border-b hover:bg-gray-50">
+                          <td className="py-3 px-4 text-gray-700">{entry.date}</td>
+                          <td className="py-3 px-4 text-gray-600">{entry.time}</td>
+                          <td className="py-3 px-4 text-gray-700">{entry.warehouse}</td>
+                          <td className="py-3 px-4">
+                            <span className="font-mono font-medium text-blue-600">{entry.productCode}</span>
+                          </td>
+                          <td className="py-3 px-4 font-medium text-gray-800">{entry.productName}</td>
+                          <td className="py-3 px-4 text-gray-700">{entry.userName}</td>
+                          <td className="py-3 px-4 text-center">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${getActionColor(entry.action)}`}>
+                              {entry.action}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right font-medium text-gray-800">
+                            {entry.quantity.toLocaleString()}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </CardContent>
           </Card>

@@ -5,88 +5,34 @@ import { Sidebar } from '@/components/sidebar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { UserCog, Plus, Edit2, Trash2, Search, X, Save, Shield, Eye, Pencil, Check, AlertCircle } from 'lucide-react'
+import { UserCog, Plus, Edit2, Trash2, Search, X, Save, Shield, Check, AlertCircle } from 'lucide-react'
 
-// Các role mặc định
-const ROLES = [
-  { id: 'giamdoc', name: 'Giám đốc', description: 'Toàn quyền hệ thống' },
-  { id: 'truongphong', name: 'Trưởng phòng', description: 'Quản lý phòng ban' },
-  { id: 'ketoan', name: 'Kế toán', description: 'Xem và sửa số liệu tài chính' },
-  { id: 'hr', name: 'Nhân viên nhân sự', description: 'Quản lý nhân sự' },
-  { id: 'kho', name: 'Nhân viên kho', description: 'Quản lý kho hàng' },
+// Danh sách chức năng mới
+const CHUC_NANG_LIST = [
+  { id: 'xem-co-ban', name: 'Xem thông tin cơ bản', description: 'Xem tất cả thông tin, không thao tác' },
+  { id: 'nhap-kho', name: 'Nhập kho', description: 'Có thể nhập kho' },
+  { id: 'xuat-kho', name: 'Xuất kho', description: 'Có thể xuất kho' },
+  { id: 'ton-kho', name: 'Tồn kho', description: 'Có thể chỉnh sửa tồn kho' },
+  { id: 'them-tai-khoan', name: 'Thêm tài khoản', description: 'Có thể thêm/sửa tài khoản' },
 ]
-
-// Các quyền truy cập
-const PERMISSIONS = [
-  { id: 'dashboard', name: 'Thông Tin Nhân Viên', icon: '👤' },
-  { id: 'warehouse', name: 'Quản Lý Kho', icon: '📦' },
-  { id: 'inventory', name: 'Tồn Kho', icon: '🗃️' },
-  { id: 'history', name: 'Lịch Sử Kho', icon: '📜' },
-  { id: 'hr', name: 'Quản Lý Nhân Sự', icon: '👥' },
-  { id: 'account', name: 'Tài Khoản', icon: '⚙️' },
-]
-
-// Quyền mặc định theo role
-const DEFAULT_ROLE_PERMISSIONS: Record<string, Record<string, { view: boolean; edit: boolean }>> = {
-  giamdoc: {
-    dashboard: { view: true, edit: true },
-    warehouse: { view: true, edit: true },
-    inventory: { view: true, edit: true },
-    history: { view: true, edit: true },
-    hr: { view: true, edit: true },
-    account: { view: true, edit: true },
-  },
-  truongphong: {
-    dashboard: { view: true, edit: true },
-    warehouse: { view: true, edit: true },
-    inventory: { view: true, edit: false },
-    history: { view: true, edit: false },
-    hr: { view: true, edit: true },
-    account: { view: true, edit: false },
-  },
-  ketoan: {
-    dashboard: { view: true, edit: false },
-    warehouse: { view: true, edit: false },
-    inventory: { view: true, edit: true },
-    history: { view: true, edit: true },
-    hr: { view: false, edit: false },
-    account: { view: false, edit: false },
-  },
-  hr: {
-    dashboard: { view: true, edit: false },
-    warehouse: { view: false, edit: false },
-    inventory: { view: false, edit: false },
-    history: { view: false, edit: false },
-    hr: { view: true, edit: true },
-    account: { view: false, edit: false },
-  },
-  kho: {
-    dashboard: { view: true, edit: false },
-    warehouse: { view: true, edit: true },
-    inventory: { view: true, edit: false },
-    history: { view: true, edit: false },
-    hr: { view: false, edit: false },
-    account: { view: false, edit: false },
-  },
-}
 
 interface Account {
   id: number
   username: string
   password: string
   name: string
-  role: string
-  permissions: Record<string, { view: boolean; edit: boolean }>
+  chucVu: string
+  chucNang: string
   status: 'active' | 'inactive'
   createdAt: string
 }
 
 const DEFAULT_ACCOUNTS: Account[] = [
-  { id: 1, username: 'kho', password: 'password123', name: 'Nguyễn Văn A', role: 'kho', permissions: DEFAULT_ROLE_PERMISSIONS.kho, status: 'active', createdAt: '2024-01-15' },
-  { id: 2, username: 'hr', password: 'password123', name: 'Trần Thị B', role: 'hr', permissions: DEFAULT_ROLE_PERMISSIONS.hr, status: 'active', createdAt: '2024-01-15' },
-  { id: 3, username: 'ketoan', password: 'password123', name: 'Lê Văn C', role: 'ketoan', permissions: DEFAULT_ROLE_PERMISSIONS.ketoan, status: 'active', createdAt: '2024-01-15' },
-  { id: 4, username: 'truongphong', password: 'password123', name: 'Phạm Thị D', role: 'truongphong', permissions: DEFAULT_ROLE_PERMISSIONS.truongphong, status: 'active', createdAt: '2024-01-15' },
-  { id: 5, username: 'giamdoc', password: 'password123', name: 'Đặng Văn E', role: 'giamdoc', permissions: DEFAULT_ROLE_PERMISSIONS.giamdoc, status: 'active', createdAt: '2024-01-15' },
+  { id: 1, username: 'kho', password: 'password123', name: 'Nguyễn Văn A', chucVu: 'Nhân viên kho', chucNang: 'nhap-kho', status: 'active', createdAt: '2024-01-15' },
+  { id: 2, username: 'hr', password: 'password123', name: 'Trần Thị B', chucVu: 'Nhân viên nhân sự', chucNang: 'xem-co-ban', status: 'active', createdAt: '2024-01-15' },
+  { id: 3, username: 'ketoan', password: 'password123', name: 'Lê Văn C', chucVu: 'Kế toán', chucNang: 'ton-kho', status: 'active', createdAt: '2024-01-15' },
+  { id: 4, username: 'truongphong', password: 'password123', name: 'Phạm Thị D', chucVu: 'Trưởng phòng', chucNang: 'xuat-kho', status: 'active', createdAt: '2024-01-15' },
+  { id: 5, username: 'giamdoc', password: 'password123', name: 'Đặng Văn E', chucVu: 'Giám đốc', chucNang: 'them-tai-khoan', status: 'active', createdAt: '2024-01-15' },
 ]
 
 export default function AccountPage() {
@@ -94,17 +40,15 @@ export default function AccountPage() {
   const [accounts, setAccounts] = useState<Account[]>(DEFAULT_ACCOUNTS)
   const [searchTerm, setSearchTerm] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false)
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
   const [formData, setFormData] = useState({
     username: '',
     password: '',
     name: '',
-    role: 'kho',
+    chucVu: '',
+    chucNang: 'xem-co-ban',
     status: 'active' as 'active' | 'inactive',
   })
-  const [tempPermissions, setTempPermissions] = useState<Record<string, { view: boolean; edit: boolean }>>({})
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -127,15 +71,14 @@ export default function AccountPage() {
     localStorage.setItem('accounts', JSON.stringify(accounts))
   }, [accounts])
 
+  // Tìm kiếm theo Họ và tên
   const filteredAccounts = accounts.filter(
-    (acc) =>
-      acc.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      acc.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (acc) => acc.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleAdd = () => {
     setEditingAccount(null)
-    setFormData({ username: '', password: '', name: '', role: 'kho', status: 'active' })
+    setFormData({ username: '', password: '', name: '', chucVu: '', chucNang: 'xem-co-ban', status: 'active' })
     setIsModalOpen(true)
   }
 
@@ -145,7 +88,8 @@ export default function AccountPage() {
       username: account.username,
       password: account.password,
       name: account.name,
-      role: account.role,
+      chucVu: account.chucVu,
+      chucNang: account.chucNang,
       status: account.status,
     })
     setIsModalOpen(true)
@@ -179,7 +123,6 @@ export default function AccountPage() {
       const newAccount: Account = {
         id: newId,
         ...formData,
-        permissions: DEFAULT_ROLE_PERMISSIONS[formData.role] || DEFAULT_ROLE_PERMISSIONS.kho,
         createdAt: new Date().toISOString().split('T')[0],
       }
       setAccounts(prev => [...prev, newAccount])
@@ -187,39 +130,8 @@ export default function AccountPage() {
     setIsModalOpen(false)
   }
 
-  const handleOpenPermissions = (account: Account) => {
-    setSelectedAccount(account)
-    setTempPermissions({ ...account.permissions })
-    setIsPermissionModalOpen(true)
-  }
-
-  const handleSavePermissions = () => {
-    if (selectedAccount) {
-      setAccounts(prev => prev.map(a =>
-        a.id === selectedAccount.id
-          ? { ...a, permissions: tempPermissions }
-          : a
-      ))
-    }
-    setIsPermissionModalOpen(false)
-  }
-
-  const togglePermission = (permId: string, type: 'view' | 'edit') => {
-    setTempPermissions(prev => ({
-      ...prev,
-      [permId]: {
-        ...prev[permId],
-        [type]: !prev[permId]?.[type],
-        // Nếu bỏ view thì cũng bỏ edit
-        ...(type === 'view' && prev[permId]?.[type] ? { edit: false } : {}),
-        // Nếu bật edit thì cũng bật view
-        ...(type === 'edit' && !prev[permId]?.[type] ? { view: true } : {}),
-      }
-    }))
-  }
-
-  const getRoleName = (roleId: string) => {
-    return ROLES.find(r => r.id === roleId)?.name || roleId
+  const getChucNangName = (id: string) => {
+    return CHUC_NANG_LIST.find(c => c.id === id)?.name || id
   }
 
   if (!user) {
@@ -234,7 +146,7 @@ export default function AccountPage() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Quản Lý Tài Khoản</h1>
-            <p className="text-gray-600">Quản lý tài khoản người dùng, phân quyền truy cập hệ thống</p>
+            <p className="text-gray-600">Quản lý tài khoản người dùng, phân quyền chức năng hệ thống</p>
           </div>
 
           {/* Stats */}
@@ -276,8 +188,8 @@ export default function AccountPage() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-500">Số role</p>
-                    <p className="text-2xl font-bold text-purple-600">{ROLES.length}</p>
+                    <p className="text-sm text-gray-500">Số chức năng</p>
+                    <p className="text-2xl font-bold text-purple-600">{CHUC_NANG_LIST.length}</p>
                   </div>
                   <Shield className="w-10 h-10 text-purple-500" />
                 </div>
@@ -304,7 +216,7 @@ export default function AccountPage() {
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
-                  placeholder="Tìm kiếm theo tên đăng nhập hoặc họ tên..."
+                  placeholder="Tìm kiếm theo họ và tên..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 border-2 border-gray-200"
@@ -316,18 +228,19 @@ export default function AccountPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-gray-100">
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Họ và tên</th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Tên đăng nhập</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Họ tên</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Vai trò</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Chức vụ</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Chức năng</th>
+                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Ngày</th>
                       <th className="text-center py-3 px-4 font-semibold text-gray-700">Trạng thái</th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-700">Ngày tạo</th>
                       <th className="text-center py-3 px-4 font-semibold text-gray-700">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredAccounts.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="text-center py-8 text-gray-500">
+                        <td colSpan={7} className="text-center py-8 text-gray-500">
                           Không có tài khoản nào
                         </td>
                       </tr>
@@ -335,16 +248,20 @@ export default function AccountPage() {
                       filteredAccounts.map((account) => (
                         <tr key={account.id} className="border-b hover:bg-gray-50">
                           <td className="py-3 px-4">
-                            <span className="font-mono font-medium text-blue-600">{account.username}</span>
-                          </td>
-                          <td className="py-3 px-4">
                             <p className="font-medium text-gray-800">{account.name}</p>
                           </td>
                           <td className="py-3 px-4">
+                            <span className="font-mono font-medium text-blue-600">{account.username}</span>
+                          </td>
+                          <td className="py-3 px-4 text-gray-700">
+                            {account.chucVu}
+                          </td>
+                          <td className="py-3 px-4">
                             <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs font-medium">
-                              {getRoleName(account.role)}
+                              {getChucNangName(account.chucNang)}
                             </span>
                           </td>
+                          <td className="py-3 px-4 text-gray-600">{account.createdAt}</td>
                           <td className="py-3 px-4 text-center">
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
                               account.status === 'active' 
@@ -354,18 +271,8 @@ export default function AccountPage() {
                               {account.status === 'active' ? 'Hoạt động' : 'Tạm khóa'}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-gray-600">{account.createdAt}</td>
                           <td className="py-3 px-4">
                             <div className="flex items-center justify-center gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleOpenPermissions(account)}
-                                className="h-8 w-8 p-0 hover:bg-purple-100 text-purple-600"
-                                title="Phân quyền"
-                              >
-                                <Shield className="h-4 w-4" />
-                              </Button>
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -395,20 +302,20 @@ export default function AccountPage() {
             </CardContent>
           </Card>
 
-          {/* Role Reference */}
+          {/* Danh sách chức năng */}
           <Card className="mt-6 border-l-4 border-l-purple-600">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-purple-600">
                 <Shield className="w-5 h-5" />
-                Danh Sách Vai Trò
+                Danh Sách Chức Năng
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {ROLES.map((role) => (
-                  <div key={role.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="font-semibold text-gray-800">{role.name}</p>
-                    <p className="text-sm text-gray-500 mt-1">{role.description}</p>
+                {CHUC_NANG_LIST.map((cn) => (
+                  <div key={cn.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <p className="font-semibold text-gray-800">{cn.name}</p>
+                    <p className="text-sm text-gray-500 mt-1">{cn.description}</p>
                   </div>
                 ))}
               </div>
@@ -418,7 +325,7 @@ export default function AccountPage() {
           {/* Modal Add/Edit Account */}
           {isModalOpen && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+              <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-gray-800">
                     {editingAccount ? 'Sửa Tài Khoản' : 'Thêm Tài Khoản'}
@@ -442,15 +349,15 @@ export default function AccountPage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu *</label>
                     <Input
-                      type="password"
+                      type={editingAccount ? 'text' : 'password'}
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      placeholder="••••••••"
+                      placeholder={editingAccount ? '' : '••••••••'}
                       className="border-2"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Họ tên *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên *</label>
                     <Input
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -459,14 +366,23 @@ export default function AccountPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Vai trò</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Chức vụ</label>
+                    <Input
+                      value={formData.chucVu}
+                      onChange={(e) => setFormData({ ...formData, chucVu: e.target.value })}
+                      placeholder="Nhập chức vụ (VD: Nhân viên kho, Kế toán...)"
+                      className="border-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Chức năng</label>
                     <select
-                      value={formData.role}
-                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                      value={formData.chucNang}
+                      onChange={(e) => setFormData({ ...formData, chucNang: e.target.value })}
                       className="w-full p-2 border-2 rounded-lg"
                     >
-                      {ROLES.map((role) => (
-                        <option key={role.id} value={role.id}>{role.name}</option>
+                      {CHUC_NANG_LIST.map((cn) => (
+                        <option key={cn.id} value={cn.id}>{cn.name}</option>
                       ))}
                     </select>
                   </div>
@@ -490,86 +406,6 @@ export default function AccountPage() {
                   <Button onClick={handleSave} className="flex-1 bg-blue-600 hover:bg-blue-700">
                     <Save className="w-4 h-4 mr-2" />
                     {editingAccount ? 'Cập Nhật' : 'Tạo Mới'}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Modal Permissions */}
-          {isPermissionModalOpen && selectedAccount && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-800">Phân Quyền Truy Cập</h2>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Tài khoản: <span className="font-medium text-blue-600">{selectedAccount.username}</span> - {selectedAccount.name}
-                    </p>
-                  </div>
-                  <button onClick={() => setIsPermissionModalOpen(false)} className="p-1 hover:bg-gray-100 rounded">
-                    <X className="w-5 h-5 text-gray-500" />
-                  </button>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="grid grid-cols-3 gap-4 p-3 bg-gray-100 rounded-lg font-semibold text-sm text-gray-700">
-                    <div>Chức năng</div>
-                    <div className="text-center flex items-center justify-center gap-1">
-                      <Eye className="w-4 h-4" /> Xem
-                    </div>
-                    <div className="text-center flex items-center justify-center gap-1">
-                      <Pencil className="w-4 h-4" /> Sửa
-                    </div>
-                  </div>
-                  
-                  {PERMISSIONS.map((perm) => (
-                    <div key={perm.id} className="grid grid-cols-3 gap-4 p-3 border-b items-center">
-                      <div className="flex items-center gap-2">
-                        <span>{perm.icon}</span>
-                        <span className="text-gray-700">{perm.name}</span>
-                      </div>
-                      <div className="text-center">
-                        <button
-                          onClick={() => togglePermission(perm.id, 'view')}
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-                            tempPermissions[perm.id]?.view 
-                              ? 'bg-green-500 text-white' 
-                              : 'bg-gray-200 text-gray-400'
-                          }`}
-                        >
-                          <Check className="w-5 h-5" />
-                        </button>
-                      </div>
-                      <div className="text-center">
-                        <button
-                          onClick={() => togglePermission(perm.id, 'edit')}
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
-                            tempPermissions[perm.id]?.edit 
-                              ? 'bg-blue-500 text-white' 
-                              : 'bg-gray-200 text-gray-400'
-                          }`}
-                        >
-                          <Check className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-sm text-yellow-700">
-                    <strong>Lưu ý:</strong> Quyền "Sửa" bao gồm cả quyền "Xem". Khi bật quyền sửa, quyền xem sẽ tự động được bật.
-                  </p>
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                  <Button variant="outline" onClick={() => setIsPermissionModalOpen(false)} className="flex-1">
-                    Hủy
-                  </Button>
-                  <Button onClick={handleSavePermissions} className="flex-1 bg-purple-600 hover:bg-purple-700">
-                    <Save className="w-4 h-4 mr-2" />
-                    Lưu Phân Quyền
                   </Button>
                 </div>
               </div>

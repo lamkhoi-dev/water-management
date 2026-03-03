@@ -5,7 +5,7 @@ import { Sidebar } from '@/components/sidebar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Package, Plus, Edit2, Trash2, Search, X, Save, Warehouse, Factory, ShoppingBag, Building, Upload, LogIn, LogOut } from 'lucide-react'
+import { Package, Plus, Edit2, Trash2, Search, X, Save, Warehouse, Factory, ShoppingBag, Building, Upload, LogIn, LogOut, FlaskConical } from 'lucide-react'
 
 // Dữ liệu mặc định cho 3 kho
 const DEFAULT_WAREHOUSE_DATA: Record<string, Product[]> = {
@@ -28,11 +28,17 @@ const DEFAULT_WAREHOUSE_DATA: Record<string, Product[]> = {
     { id: 3, code: 'TM003', name: 'Bình lọc nước gia đình', unit: 'bộ', quantity: 50, priceIn: 1000000, priceOut: 1200000, weight: 3, location: 'Kệ TM2', locationImage: '', importDate: '2024-01-28' },
     { id: 4, code: 'TM004', name: 'Máy bơm mini', unit: 'cái', quantity: 25, priceIn: 750000, priceOut: 850000, weight: 5, location: 'Kệ TM3', locationImage: '', importDate: '2024-02-06' },
   ],
+  'kho-phong-thi-nghiem': [
+    { id: 1, code: 'TN001', name: 'Bộ test pH nước', unit: 'bộ', quantity: 80, priceIn: 150000, priceOut: 180000, weight: 0.3, location: 'Kệ TN1', locationImage: '', importDate: '2024-01-14' },
+    { id: 2, code: 'TN002', name: 'Hóa chất xử lý nước Chlorine', unit: 'kg', quantity: 200, priceIn: 50000, priceOut: 65000, weight: 1, location: 'Khu TN2', locationImage: '', importDate: '2024-01-20' },
+    { id: 3, code: 'TN003', name: 'Máy đo độ đục', unit: 'cái', quantity: 10, priceIn: 2500000, priceOut: 3000000, weight: 2, location: 'Kệ TN1', locationImage: '', importDate: '2024-02-01' },
+  ],
 }
 
 const WAREHOUSES = [
   { id: 'kho-vat-tu', name: 'Kho Vật Tư Nhà Máy', icon: Factory, color: 'blue' },
   { id: 'kho-xay-dung', name: 'Kho Xây Dựng Cơ Bản', icon: Building, color: 'orange' },
+  { id: 'kho-phong-thi-nghiem', name: 'Kho Phòng Thí Nghiệm', icon: FlaskConical, color: 'purple' },
   { id: 'kho-thuong-mai', name: 'Kho Thương Mại', icon: ShoppingBag, color: 'green' },
 ]
 
@@ -55,7 +61,7 @@ export default function WarehousePage() {
   const [selectedWarehouse, setSelectedWarehouse] = useState('kho-vat-tu')
   const [searchTerm, setSearchTerm] = useState('')
   const [warehouseData, setWarehouseData] = useState<Record<string, Product[]>>(DEFAULT_WAREHOUSE_DATA)
-  const [deletedProducts, setDeletedProducts] = useState<Record<string, Product[]>>({ 'kho-vat-tu': [], 'kho-xay-dung': [], 'kho-thuong-mai': [] })
+  const [deletedProducts, setDeletedProducts] = useState<Record<string, Product[]>>({ 'kho-vat-tu': [], 'kho-xay-dung': [], 'kho-phong-thi-nghiem': [], 'kho-thuong-mai': [] })
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'import' | 'export'>('import')
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -177,6 +183,32 @@ export default function WarehousePage() {
       )
     }))
 
+    // Cập nhật tồn kho (inventoryData)
+    const savedInventory = JSON.parse(localStorage.getItem('inventoryData') || '{"kho-vat-tu":[],"kho-xay-dung":[],"kho-phong-thi-nghiem":[],"kho-thuong-mai":[]}')
+    const warehouseInventory = savedInventory[selectedWarehouse] || []
+    const existingIdx = warehouseInventory.findIndex((p: Product) => p.code === foundProduct.code)
+    if (existingIdx >= 0) {
+      warehouseInventory[existingIdx] = { ...foundProduct, quantity: foundProduct.quantity - exportQuantity }
+    } else {
+      warehouseInventory.push({ ...foundProduct, quantity: foundProduct.quantity - exportQuantity })
+    }
+    savedInventory[selectedWarehouse] = warehouseInventory
+    localStorage.setItem('inventoryData', JSON.stringify(savedInventory))
+
+    // Log lịch sử xuất kho
+    const historyLog = JSON.parse(localStorage.getItem('historyLog') || '[]')
+    historyLog.push({
+      date: new Date().toLocaleDateString('vi-VN'),
+      time: new Date().toLocaleTimeString('vi-VN'),
+      warehouse: currentWarehouse?.name || '',
+      productCode: foundProduct.code,
+      productName: foundProduct.name,
+      userName: user?.name || user?.username || '',
+      action: 'Xuất kho',
+      quantity: exportQuantity,
+    })
+    localStorage.setItem('historyLog', JSON.stringify(historyLog))
+
     alert(`Đã xuất ${exportQuantity} ${foundProduct.unit} ${foundProduct.name}`)
     setIsModalOpen(false)
   }
@@ -237,10 +269,38 @@ export default function WarehousePage() {
     } else {
       // Thêm sản phẩm mới
       const newId = Math.max(...currentItems.map(p => p.id), 0) + 1
+      const newProduct = { id: newId, ...formData }
       setWarehouseData(prev => ({
         ...prev,
-        [selectedWarehouse]: [...prev[selectedWarehouse], { id: newId, ...formData }]
+        [selectedWarehouse]: [...prev[selectedWarehouse], newProduct]
       }))
+
+      // Cập nhật tồn kho (inventoryData)
+      const savedInventory = JSON.parse(localStorage.getItem('inventoryData') || '{"kho-vat-tu":[],"kho-xay-dung":[],"kho-phong-thi-nghiem":[],"kho-thuong-mai":[]}')
+      const warehouseInventory = savedInventory[selectedWarehouse] || []
+      const existingIdx = warehouseInventory.findIndex((p: Product) => p.code === formData.code)
+      if (existingIdx >= 0) {
+        warehouseInventory[existingIdx] = { ...warehouseInventory[existingIdx], ...formData, quantity: warehouseInventory[existingIdx].quantity + formData.quantity }
+      } else {
+        const invId = Math.max(...warehouseInventory.map((p: Product) => p.id), 0) + 1
+        warehouseInventory.push({ id: invId, ...formData })
+      }
+      savedInventory[selectedWarehouse] = warehouseInventory
+      localStorage.setItem('inventoryData', JSON.stringify(savedInventory))
+
+      // Log lịch sử nhập kho
+      const historyLog = JSON.parse(localStorage.getItem('historyLog') || '[]')
+      historyLog.push({
+        date: new Date().toLocaleDateString('vi-VN'),
+        time: new Date().toLocaleTimeString('vi-VN'),
+        warehouse: currentWarehouse?.name || '',
+        productCode: formData.code,
+        productName: formData.name,
+        userName: user?.name || user?.username || '',
+        action: 'Nhập kho',
+        quantity: formData.quantity,
+      })
+      localStorage.setItem('historyLog', JSON.stringify(historyLog))
     }
     setIsModalOpen(false)
   }
@@ -273,13 +333,14 @@ export default function WarehousePage() {
           </div>
 
           {/* Warehouse Tabs */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {WAREHOUSES.map((warehouse) => {
               const Icon = warehouse.icon
               const isSelected = selectedWarehouse === warehouse.id
               const colorClasses = {
                 blue: isSelected ? 'bg-blue-600 text-white border-blue-700' : 'bg-white text-blue-600 border-blue-200 hover:border-blue-400',
                 orange: isSelected ? 'bg-orange-500 text-white border-orange-600' : 'bg-white text-orange-500 border-orange-200 hover:border-orange-400',
+                purple: isSelected ? 'bg-purple-600 text-white border-purple-700' : 'bg-white text-purple-600 border-purple-200 hover:border-purple-400',
                 green: isSelected ? 'bg-green-600 text-white border-green-700' : 'bg-white text-green-600 border-green-200 hover:border-green-400',
               }
               return (
@@ -303,13 +364,15 @@ export default function WarehousePage() {
           {/* Product Table */}
           <Card className={`border-l-4 ${
               currentWarehouse?.color === 'blue' ? 'border-l-blue-600' :
-              currentWarehouse?.color === 'orange' ? 'border-l-orange-500' : 'border-l-green-600'
+              currentWarehouse?.color === 'orange' ? 'border-l-orange-500' :
+              currentWarehouse?.color === 'purple' ? 'border-l-purple-600' : 'border-l-green-600'
             }`}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className={`flex items-center gap-2 ${
                   currentWarehouse?.color === 'blue' ? 'text-blue-600' :
-                  currentWarehouse?.color === 'orange' ? 'text-orange-500' : 'text-green-600'
+                  currentWarehouse?.color === 'orange' ? 'text-orange-500' :
+                  currentWarehouse?.color === 'purple' ? 'text-purple-600' : 'text-green-600'
                 }`}>
                   {currentWarehouse && <currentWarehouse.icon className="w-5 h-5" />}
                   {currentWarehouse?.name}
