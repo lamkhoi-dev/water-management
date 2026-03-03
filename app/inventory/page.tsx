@@ -162,7 +162,7 @@ export default function InventoryPage() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Tồn Kho</h1>
-            <p className="text-gray-600">Danh sách sản phẩm tồn kho theo từng kho</p>
+            <p className="text-gray-600">Danh sách các sản phẩm đã xóa khỏi kho</p>
           </div>
 
           {/* Warehouse Tabs */}
@@ -319,32 +319,10 @@ export default function InventoryPage() {
                 </div>
 
                 <div className="space-y-4">
-                  {selectedProduct.locationImage && (
-                    <div className="mb-4">
-                      <img 
-                        src={selectedProduct.locationImage} 
-                        alt={selectedProduct.name}
-                        className="w-full h-64 object-cover rounded-lg border-2"
-                      />
-                    </div>
-                  )}
-
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-500 mb-1">Mã hàng</p>
-                      <p className="font-mono font-bold text-blue-600">{selectedProduct.code}</p>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-500 mb-1">Tên hàng</p>
-                      <p className="font-medium">{selectedProduct.name}</p>
-                    </div>
                     <div className="p-3 bg-gray-50 rounded-lg">
                       <p className="text-sm text-gray-500 mb-1">Đơn vị tính</p>
                       <p className="font-medium">{selectedProduct.unit}</p>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-500 mb-1">Số lượng</p>
-                      <p className="font-bold text-green-600">{selectedProduct.quantity.toLocaleString()} {selectedProduct.unit}</p>
                     </div>
                     <div className="p-3 bg-gray-50 rounded-lg">
                       <p className="text-sm text-gray-500 mb-1">Giá nhập</p>
@@ -355,18 +333,29 @@ export default function InventoryPage() {
                       <p className="font-medium">{selectedProduct.priceOut.toLocaleString('vi-VN')} đ</p>
                     </div>
                     <div className="p-3 bg-gray-50 rounded-lg">
+                      <p className="text-sm text-gray-500 mb-1">Vị trí</p>
+                      <p className="font-medium">{selectedProduct.location}</p>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
                       <p className="text-sm text-gray-500 mb-1">Trọng lượng</p>
                       <p className="font-medium">{selectedProduct.weight} kg</p>
                     </div>
                     <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-500 mb-1">Vị trí</p>
-                      <p className="font-medium">{selectedProduct.location}</p>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-lg col-span-2">
                       <p className="text-sm text-gray-500 mb-1">Ngày nhập kho</p>
                       <p className="font-medium">{selectedProduct.importDate}</p>
                     </div>
                   </div>
+
+                  {selectedProduct.locationImage && (
+                    <div>
+                      <p className="text-sm text-gray-500 mb-2">Hình ảnh sản phẩm</p>
+                      <img 
+                        src={selectedProduct.locationImage} 
+                        alt={selectedProduct.name}
+                        className="w-full h-64 object-cover rounded-lg border-2"
+                      />
+                    </div>
+                  )}
 
                   <div className="flex gap-3 mt-6">
                     <Button variant="outline" onClick={() => setIsDetailModalOpen(false)} className="flex-1">
