@@ -414,13 +414,12 @@ export default function WarehousePage() {
                       <th className="text-right py-3 px-4 font-semibold text-gray-700">Giá Xuất</th>
                       <th className="text-right py-3 px-4 font-semibold text-gray-700">Trọng Lượng</th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Vị Trí</th>
-                      <th className="text-center py-3 px-4 font-semibold text-gray-700">Thao Tác</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredItems.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="text-center py-8 text-gray-500">
+                        <td colSpan={8} className="text-center py-8 text-gray-500">
                           Không có sản phẩm nào
                         </td>
                       </tr>
@@ -452,26 +451,6 @@ export default function WarehousePage() {
                               {item.locationImage && (
                                 <img src={item.locationImage} alt="Vị trí" className="w-8 h-8 object-cover rounded" />
                               )}
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEdit(item)}
-                                className="h-8 w-8 p-0 hover:bg-blue-100 text-blue-600"
-                              >
-                                <Edit2 className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDelete(item.id)}
-                                className="h-8 w-8 p-0 hover:bg-red-100 text-red-600"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
                             </div>
                           </td>
                         </tr>

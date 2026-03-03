@@ -32,7 +32,7 @@ export default function InventoryPage() {
   const [user, setUser] = useState<any>(null)
   const [selectedWarehouse, setSelectedWarehouse] = useState('kho-vat-tu')
   const [searchTerm, setSearchTerm] = useState('')
-  const [inventoryData, setInventoryData] = useState<Record<string, Product[]>>({
+  const [warehouseData, setWarehouseData] = useState<Record<string, Product[]>>({
     'kho-vat-tu': [], 'kho-xay-dung': [], 'kho-phong-thi-nghiem': [], 'kho-thuong-mai': []
   })
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
@@ -52,19 +52,12 @@ export default function InventoryPage() {
     const parsed = JSON.parse(userData)
     setUser(parsed)
 
-    // Load inventory data from localStorage
-    const savedInventory = localStorage.getItem('inventoryData')
-    if (savedInventory) {
-      setInventoryData(JSON.parse(savedInventory))
+    // Load warehouseData from localStorage (same data as warehouse page)
+    const savedData = localStorage.getItem('warehouseData')
+    if (savedData) {
+      setWarehouseData(JSON.parse(savedData))
     }
   }, [])
-
-  // Lưu inventory vào localStorage
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem('inventoryData', JSON.stringify(inventoryData))
-    }
-  }, [inventoryData, user])
 
   // Kiểm tra user có chức năng "Tồn kho" không
   const canEditInventory = () => {
@@ -74,7 +67,7 @@ export default function InventoryPage() {
     return currentAccount?.chucNang === 'ton-kho' || currentAccount?.chucNang === 'them-tai-khoan'
   }
 
-  const currentItems = inventoryData[selectedWarehouse] || []
+  const currentItems = warehouseData[selectedWarehouse] || []
   const filteredItems = currentItems.filter(
     (item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -107,12 +100,14 @@ export default function InventoryPage() {
 
   const handleSaveEdit = () => {
     if (!editingProduct) return
-    setInventoryData(prev => ({
-      ...prev,
-      [selectedWarehouse]: prev[selectedWarehouse].map(p =>
+    const updatedData = {
+      ...warehouseData,
+      [selectedWarehouse]: warehouseData[selectedWarehouse].map(p =>
         p.id === editingProduct.id ? { ...p, ...editFormData } : p
       )
-    }))
+    }
+    setWarehouseData(updatedData)
+    localStorage.setItem('warehouseData', JSON.stringify(updatedData))
 
     // Log to history
     const historyLog = JSON.parse(localStorage.getItem('historyLog') || '[]')
@@ -133,10 +128,12 @@ export default function InventoryPage() {
 
   const handleDelete = (productId: number) => {
     if (confirm('Bạn có chắc chắn muốn xóa sản phẩm khỏi tồn kho?')) {
-      setInventoryData(prev => ({
-        ...prev,
-        [selectedWarehouse]: prev[selectedWarehouse].filter(p => p.id !== productId)
-      }))
+      const updatedData = {
+        ...warehouseData,
+        [selectedWarehouse]: warehouseData[selectedWarehouse].filter(p => p.id !== productId)
+      }
+      setWarehouseData(updatedData)
+      localStorage.setItem('warehouseData', JSON.stringify(updatedData))
     }
   }
 
@@ -165,7 +162,7 @@ export default function InventoryPage() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Tồn Kho</h1>
-            <p className="text-gray-600">Danh sách sản phẩm tồn kho sau nhập/xuất</p>
+            <p className="text-gray-600">Danh sách sản phẩm tồn kho theo từng kho</p>
           </div>
 
           {/* Warehouse Tabs */}
@@ -189,7 +186,7 @@ export default function InventoryPage() {
                   <div className="text-left">
                     <p className="font-semibold">{warehouse.name}</p>
                     <p className={`text-sm ${isSelected ? 'opacity-80' : 'opacity-60'}`}>
-                      {inventoryData[warehouse.id]?.length || 0} sản phẩm
+                      {warehouseData[warehouse.id]?.length || 0} sản phẩm
                     </p>
                   </div>
                 </button>
