@@ -25,12 +25,8 @@ export const metadata: Metadata = {
   title: 'Công ty cổ phần nước BIWASE - Long An | Hệ Thống Quản Lý',
   description: 'Hệ thống quản lý Công ty cổ phần nước BIWASE - Long An - Quản lý kho, nhân sự và hoạt động công ty',
   icons: {
-    icon: [
-      { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
-      { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/logo.png',
+    apple: '/logo.png',
   },
 }
 
