@@ -2,338 +2,284 @@
 
 import { useEffect, useState } from 'react'
 import { Sidebar } from '@/components/sidebar'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Users, Plus, Edit2, Trash2, Clock, CheckCircle, AlertCircle } from 'lucide-react'
+import { Users, Plus, Edit2, Trash2, Search, X, Save, Eye, Bell, AlertTriangle } from 'lucide-react'
+import { getAccounts } from '@/lib/constants'
 
-const MOCK_EMPLOYEES = [
-  { id: 1, name: 'Nguyễn Văn A', position: 'Nhân viên kho', department: 'Kho', status: 'present', joinDate: '2022-01-15' },
-  { id: 2, name: 'Trần Thị B', position: 'Nhân viên nhân sự', department: 'Hành chính', status: 'present', joinDate: '2021-06-10' },
-  { id: 3, name: 'Lê Văn C', position: 'Kế toán', department: 'Tài chính', status: 'leave', joinDate: '2020-03-20' },
-  { id: 4, name: 'Phạm Thị D', position: 'Trưởng phòng', department: 'Kỹ thuật', status: 'present', joinDate: '2019-12-01' },
-  { id: 5, name: 'Đặng Văn E', position: 'Giám đốc', department: 'Lãnh đạo', status: 'present', joinDate: '2018-01-10' },
-  { id: 6, name: 'Hoàng Thị F', position: 'Nhân viên bán hàng', department: 'Kinh doanh', status: 'absent', joinDate: '2023-02-14' },
-  { id: 7, name: 'Võ Văn G', position: 'Kỹ sư', department: 'Kỹ thuật', status: 'present', joinDate: '2021-09-05' },
-  { id: 8, name: 'Bùi Thị H', position: 'Tư vấn khách hàng', department: 'Kinh doanh', status: 'present', joinDate: '2022-05-18' },
-]
+interface Employee {
+  id: number; hoTen: string; ngaySinh: string; gioiTinh: string; cccd: string
+  ngayCapCCCD: string; noiCapCCCD: string; ngayThuViec: string; ngayChinhThuc: string
+  ngayHetHD: string; loaiHD: string; trinhDo: string; chuyenNganh: string
+  truongDaoTao: string; namTotNghiep: string; diaChi: string; username?: string
+}
 
-const MOCK_ATTENDANCE = [
-  { id: 1, date: '2024-01-15', present: 82, absent: 3, leave: 2 },
-  { id: 2, date: '2024-01-14', present: 85, absent: 1, leave: 1 },
-  { id: 3, date: '2024-01-13', present: 80, absent: 4, leave: 3 },
-  { id: 4, date: '2024-01-12', present: 84, absent: 2, leave: 1 },
-]
+const LOAI_HD_OPTIONS = ['Chính thức', 'Thử việc', 'Cộng tác viên', 'Thời vụ']
+const GIOI_TINH_OPTIONS = ['Nam', 'Nữ']
+const TRINH_DO_OPTIONS = ['Tiến sĩ', 'Thạc sĩ', 'Đại học', 'Cao đẳng', 'Trung cấp', 'Phổ thông']
 
-const MOCK_EVALUATION = [
-  { id: 1, employeeName: 'Nguyễn Văn A', score: 8.5, period: 'Q4 2023', status: 'Hoàn thành' },
-  { id: 2, employeeName: 'Trần Thị B', score: 9.2, period: 'Q4 2023', status: 'Hoàn thành' },
-  { id: 3, employeeName: 'Lê Văn C', score: 7.8, period: 'Q4 2023', status: 'Chờ xét duyệt' },
-  { id: 4, employeeName: 'Phạm Thị D', score: 9.5, period: 'Q4 2023', status: 'Hoàn thành' },
+// Tính tuổi từ ngày sinh
+const calcAge = (dob: string): number => {
+  if (!dob) return 0
+  return Math.floor((Date.now() - new Date(dob).getTime()) / 31557600000)
+}
+
+// Tính thâm niên (năm) từ ngày làm việc
+const calcSeniority = (date: string): string => {
+  if (!date) return '0'
+  const years = Math.floor((Date.now() - new Date(date).getTime()) / 31557600000)
+  const months = Math.floor(((Date.now() - new Date(date).getTime()) % 31557600000) / 2629800000)
+  return years > 0 ? `${years} năm ${months} tháng` : `${months} tháng`
+}
+
+// Kiểm tra hợp đồng sắp hết hạn (≤30 ngày)
+const isExpiringSoon = (date: string): boolean => {
+  if (!date) return false
+  const diff = new Date(date).getTime() - Date.now()
+  return diff > 0 && diff <= 30 * 86400000
+}
+
+const isExpired = (date: string): boolean => {
+  if (!date) return false
+  return new Date(date).getTime() < Date.now()
+}
+
+// Mock data nhân viên mẫu
+const DEFAULT_EMPLOYEES: Employee[] = [
+  { id: 1, hoTen: 'Nguyễn Văn A', ngaySinh: '1990-05-12', gioiTinh: 'Nam', cccd: '079012345678', ngayCapCCCD: '2021-03-15', noiCapCCCD: 'CA Long An', ngayThuViec: '2023-01-10', ngayChinhThuc: '2023-04-10', ngayHetHD: '2026-04-10', loaiHD: 'Chính thức', trinhDo: 'Đại học', chuyenNganh: 'Quản lý môi trường', truongDaoTao: 'ĐH Cần Thơ', namTotNghiep: '2014', diaChi: 'Huyện Đức Hòa, Long An', username: 'kho' },
+  { id: 2, hoTen: 'Trần Thị B', ngaySinh: '1992-08-22', gioiTinh: 'Nữ', cccd: '079087654321', ngayCapCCCD: '2021-05-20', noiCapCCCD: 'CA TP.HCM', ngayThuViec: '2022-06-01', ngayChinhThuc: '2022-09-01', ngayHetHD: '2026-09-01', loaiHD: 'Chính thức', trinhDo: 'Thạc sĩ', chuyenNganh: 'Kế toán tài chính', truongDaoTao: 'ĐH Kinh tế TP.HCM', namTotNghiep: '2016', diaChi: 'Quận 7, TP.HCM', username: 'hr' },
+  { id: 3, hoTen: 'Lê Văn C', ngaySinh: '1988-02-14', gioiTinh: 'Nam', cccd: '079011223344', ngayCapCCCD: '2020-01-10', noiCapCCCD: 'CA Long An', ngayThuViec: '2020-03-15', ngayChinhThuc: '2020-06-15', ngayHetHD: '2026-06-15', loaiHD: 'Chính thức', trinhDo: 'Đại học', chuyenNganh: 'Kế toán', truongDaoTao: 'ĐH Kinh tế TP.HCM', namTotNghiep: '2012', diaChi: 'Châu Thành, Long An', username: 'ketoan' },
+  { id: 4, hoTen: 'Phạm Thị D', ngaySinh: '1985-11-30', gioiTinh: 'Nữ', cccd: '079055667788', ngayCapCCCD: '2019-07-22', noiCapCCCD: 'CA Long An', ngayThuViec: '2018-01-10', ngayChinhThuc: '2018-04-10', ngayHetHD: '2026-04-15', loaiHD: 'Chính thức', trinhDo: 'Thạc sĩ', chuyenNganh: 'Quản trị kinh doanh', truongDaoTao: 'ĐH Kinh tế TP.HCM', namTotNghiep: '2010', diaChi: 'TP. Tân An, Long An', username: 'truongphong' },
+  { id: 5, hoTen: 'Đặng Văn E', ngaySinh: '1980-07-04', gioiTinh: 'Nam', cccd: '079099887766', ngayCapCCCD: '2019-01-05', noiCapCCCD: 'CA Long An', ngayThuViec: '2015-01-01', ngayChinhThuc: '2015-04-01', ngayHetHD: '2027-01-01', loaiHD: 'Chính thức', trinhDo: 'Tiến sĩ', chuyenNganh: 'Kỹ thuật môi trường', truongDaoTao: 'ĐH Bách Khoa TP.HCM', namTotNghiep: '2006', diaChi: 'TP. Tân An, Long An', username: 'giamdoc' },
 ]
 
 export default function HRPage() {
   const [user, setUser] = useState<any>(null)
+  const [employees, setEmployees] = useState<Employee[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [tab, setTab] = useState('employees')
-  const [employees, setEmployees] = useState(MOCK_EMPLOYEES)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
+  const [formData, setFormData] = useState<Employee>({
+    id: 0, hoTen: '', ngaySinh: '', gioiTinh: 'Nam', cccd: '', ngayCapCCCD: '', noiCapCCCD: '',
+    ngayThuViec: '', ngayChinhThuc: '', ngayHetHD: '', loaiHD: 'Chính thức', trinhDo: 'Đại học',
+    chuyenNganh: '', truongDaoTao: '', namTotNghiep: '', diaChi: '', username: '',
+  })
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
-    if (!userData) {
-      window.location.href = '/'
-      return
-    }
-    const parsed = JSON.parse(userData)
-    setUser(parsed)
+    if (!userData) { window.location.href = '/'; return }
+    setUser(JSON.parse(userData))
+    const savedEmp = localStorage.getItem('employees')
+    if (savedEmp) { setEmployees(JSON.parse(savedEmp)) }
+    else { setEmployees(DEFAULT_EMPLOYEES); localStorage.setItem('employees', JSON.stringify(DEFAULT_EMPLOYEES)) }
   }, [])
 
-  const filteredEmployees = employees.filter(
-    (emp) =>
-      emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.department.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  useEffect(() => {
+    if (employees.length > 0) localStorage.setItem('employees', JSON.stringify(employees))
+  }, [employees])
 
-  const statsData = {
-    totalEmployees: employees.length,
-    presentToday: employees.filter((e) => e.status === 'present').length,
-    onLeave: employees.filter((e) => e.status === 'leave').length,
-    absent: employees.filter((e) => e.status === 'absent').length,
+  const canManageHR = () => {
+    if (!user) return false
+    const accounts = getAccounts()
+    const acc = accounts.find((a: any) => a.username === user.username)
+    if (!acc) return false
+    const perms = Array.isArray(acc.chucNang) ? acc.chucNang : [acc.chucNang]
+    return perms.includes('quan-ly-nhan-su') || perms.includes('them-tai-khoan') || acc.isAdmin
   }
 
-  if (!user) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>
+  const filteredEmployees = employees.filter(e => e.hoTen.toLowerCase().includes(searchTerm.toLowerCase()))
+  const expiringContracts = employees.filter(e => isExpiringSoon(e.ngayHetHD))
+  const expiredContracts = employees.filter(e => isExpired(e.ngayHetHD))
+  const hasPermission = canManageHR()
+
+  const handleAdd = () => {
+    setEditingEmployee(null)
+    setFormData({ id: 0, hoTen: '', ngaySinh: '', gioiTinh: 'Nam', cccd: '', ngayCapCCCD: '', noiCapCCCD: '', ngayThuViec: '', ngayChinhThuc: '', ngayHetHD: '', loaiHD: 'Chính thức', trinhDo: 'Đại học', chuyenNganh: '', truongDaoTao: '', namTotNghiep: '', diaChi: '', username: '' })
+    setIsModalOpen(true)
   }
+
+  const handleEdit = (emp: Employee) => { setEditingEmployee(emp); setFormData(emp); setIsModalOpen(true) }
+  const handleView = (emp: Employee) => { setSelectedEmployee(emp); setIsDetailOpen(true) }
+
+  const handleDelete = (id: number) => {
+    if (confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) setEmployees(prev => prev.filter(e => e.id !== id))
+  }
+
+  const handleSave = () => {
+    if (!formData.hoTen || !formData.ngaySinh || !formData.cccd) { alert('Vui lòng điền đầy đủ thông tin bắt buộc! (Họ tên, Ngày sinh, CCCD)'); return }
+    if (editingEmployee) { setEmployees(prev => prev.map(e => e.id === editingEmployee.id ? formData : e)) }
+    else {
+      const newId = Math.max(...employees.map(e => e.id), 0) + 1
+      setEmployees(prev => [...prev, { ...formData, id: newId }])
+    }
+    setIsModalOpen(false)
+  }
+
+  if (!user) return <div className="flex items-center justify-center h-screen">Loading...</div>
 
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1 ml-64">
-        <div className="p-8 bg-background min-h-screen">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Quản Lý Nhân Sự</h1>
-            <p className="text-muted-foreground">Quản lý nhân viên, chấm công, và đánh giá năng lực</p>
-          </div>
+      <div className="flex-1 md:ml-64">
+        <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
+          <div className="mb-8"><h1 className="text-3xl font-bold text-gray-800">Quản Lý Nhân Sự</h1></div>
+
+          {/* Cảnh báo hợp đồng sắp hết hạn */}
+          {(expiringContracts.length > 0 || expiredContracts.length > 0) && (
+            <div className="mb-6 space-y-3">
+              {expiredContracts.map(emp => (
+                <div key={`exp-${emp.id}`} className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-center gap-3">
+                  <AlertTriangle className="w-6 h-6 text-red-500 shrink-0" />
+                  <div><p className="font-semibold text-red-700">Hợp đồng đã hết hạn!</p><p className="text-sm text-red-600">{emp.hoTen} - Hết hạn: {new Date(emp.ngayHetHD).toLocaleDateString('vi-VN')}</p></div>
+                </div>
+              ))}
+              {expiringContracts.map(emp => (
+                <div key={`warn-${emp.id}`} className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 flex items-center gap-3">
+                  <Bell className="w-6 h-6 text-amber-500 shrink-0" />
+                  <div><p className="font-semibold text-amber-700">Hợp đồng sắp hết hạn!</p><p className="text-sm text-amber-600">{emp.hoTen} - Hết hạn: {new Date(emp.ngayHetHD).toLocaleDateString('vi-VN')} (còn {Math.ceil((new Date(emp.ngayHetHD).getTime() - Date.now()) / 86400000)} ngày)</p></div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Tổng Nhân Viên</CardTitle>
-                <Users className="h-4 w-4 text-blue-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{statsData.totalEmployees}</div>
-                <p className="text-xs text-muted-foreground">Người</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Có Mặt Hôm Nay</CardTitle>
-                <CheckCircle className="h-4 w-4 text-emerald-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{statsData.presentToday}</div>
-                <p className="text-xs text-muted-foreground">Người</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Đang Nghỉ</CardTitle>
-                <Clock className="h-4 w-4 text-orange-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{statsData.onLeave}</div>
-                <p className="text-xs text-muted-foreground">Người</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Vắng Mặt</CardTitle>
-                <AlertCircle className="h-4 w-4 text-red-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{statsData.absent}</div>
-                <p className="text-xs text-muted-foreground">Người</p>
-              </CardContent>
-            </Card>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <Card><CardContent className="p-4"><p className="text-sm text-gray-500">Tổng nhân viên</p><p className="text-2xl font-bold text-gray-800">{employees.length}</p></CardContent></Card>
+            <Card><CardContent className="p-4"><p className="text-sm text-gray-500">Chính thức</p><p className="text-2xl font-bold text-green-600">{employees.filter(e => e.loaiHD === 'Chính thức').length}</p></CardContent></Card>
+            <Card><CardContent className="p-4"><p className="text-sm text-gray-500">Thử việc</p><p className="text-2xl font-bold text-amber-600">{employees.filter(e => e.loaiHD === 'Thử việc').length}</p></CardContent></Card>
+            <Card><CardContent className="p-4"><p className="text-sm text-gray-500">Sắp hết HĐ</p><p className="text-2xl font-bold text-red-600">{expiringContracts.length + expiredContracts.length}</p></CardContent></Card>
           </div>
 
-          {/* Tabs */}
-          <div className="flex gap-4 mb-6 border-b">
-            <button
-              onClick={() => setTab('employees')}
-              className={`px-4 py-2 font-medium ${tab === 'employees' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-muted-foreground'}`}
-            >
-              Danh Sách Nhân Viên
-            </button>
-            <button
-              onClick={() => setTab('attendance')}
-              className={`px-4 py-2 font-medium ${tab === 'attendance' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-muted-foreground'}`}
-            >
-              Chấm Công
-            </button>
-            <button
-              onClick={() => setTab('evaluation')}
-              className={`px-4 py-2 font-medium ${tab === 'evaluation' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-muted-foreground'}`}
-            >
-              Đánh Giá
-            </button>
-          </div>
-
-          {/* Content */}
-          {tab === 'employees' && (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Danh Sách Nhân Viên</CardTitle>
-                    <CardDescription>Quản lý thông tin nhân viên</CardDescription>
-                  </div>
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Thêm Nhân Viên
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4">
-                  <Input
-                    placeholder="Tìm kiếm nhân viên..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="border-slate-300"
-                  />
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2 px-2 font-medium text-foreground">Tên</th>
-                        <th className="text-left py-2 px-2 font-medium text-foreground">Chức Vụ</th>
-                        <th className="text-left py-2 px-2 font-medium text-foreground">Phòng Ban</th>
-                        <th className="text-center py-2 px-2 font-medium text-foreground">Trạng Thái</th>
-                        <th className="text-left py-2 px-2 font-medium text-foreground">Ngày Vào</th>
-                        <th className="text-center py-2 px-2 font-medium text-foreground">Thao Tác</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredEmployees.map((emp) => (
-                        <tr key={emp.id} className="border-b hover:bg-muted/50">
-                          <td className="py-3 px-2 font-medium text-foreground">{emp.name}</td>
-                          <td className="py-3 px-2 text-muted-foreground">{emp.position}</td>
-                          <td className="py-3 px-2 text-muted-foreground">{emp.department}</td>
-                          <td className="py-3 px-2 text-center">
-                            <span
-                              className={`text-xs font-medium px-2 py-1 rounded ${
-                                emp.status === 'present'
-                                  ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
-                                  : emp.status === 'leave'
-                                    ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
-                                    : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
-                              }`}
-                            >
-                              {emp.status === 'present' ? 'Có mặt' : emp.status === 'leave' ? 'Nghỉ' : 'Vắng'}
-                            </span>
-                          </td>
-                          <td className="py-3 px-2 text-muted-foreground text-sm">{emp.joinDate}</td>
-                          <td className="py-3 px-2 text-center">
+          {/* Employee List */}
+          <Card className="border-l-4 border-l-indigo-600">
+            <CardHeader>
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <CardTitle className="flex items-center gap-2 text-indigo-600"><Users className="w-5 h-5" /> Danh Sách Nhân Viên</CardTitle>
+                {hasPermission && <Button onClick={handleAdd} className="bg-indigo-600 text-white hover:bg-indigo-700"><Plus className="h-4 w-4 mr-2" /> Thêm Nhân Viên</Button>}
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="relative mb-4"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" /><Input placeholder="Tìm kiếm theo họ và tên..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10 border-2" /></div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700 w-12">STT</th>
+                      <th className="text-left py-3 px-3 font-semibold text-gray-700">Họ và tên</th>
+                      <th className="text-left py-3 px-3 font-semibold text-gray-700">Chức vụ</th>
+                      <th className="text-left py-3 px-3 font-semibold text-gray-700">Loại HĐ</th>
+                      <th className="text-left py-3 px-3 font-semibold text-gray-700">Hết hạn HĐ</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700">Tuổi</th>
+                      <th className="text-center py-3 px-3 font-semibold text-gray-700">Thông tin</th>
+                      {hasPermission && <th className="text-center py-3 px-3 font-semibold text-gray-700">Thao tác</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredEmployees.map((emp, index) => (
+                      <tr key={emp.id} className={`border-b hover:bg-gray-50 ${isExpired(emp.ngayHetHD) ? 'bg-red-50' : isExpiringSoon(emp.ngayHetHD) ? 'bg-amber-50' : ''}`}>
+                        <td className="py-3 px-3 text-center text-gray-600">{index + 1}</td>
+                        <td className="py-3 px-3 font-medium text-gray-800">{emp.hoTen}</td>
+                        <td className="py-3 px-3 text-gray-600">{emp.chuyenNganh}</td>
+                        <td className="py-3 px-3">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${emp.loaiHD === 'Chính thức' ? 'bg-green-100 text-green-700' : emp.loaiHD === 'Thử việc' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-700'}`}>{emp.loaiHD}</span>
+                        </td>
+                        <td className="py-3 px-3 text-gray-600">
+                          {emp.ngayHetHD ? new Date(emp.ngayHetHD).toLocaleDateString('vi-VN') : '—'}
+                          {isExpired(emp.ngayHetHD) && <span className="ml-1 text-xs text-red-600 font-bold">⚠ HẾT HẠN</span>}
+                          {isExpiringSoon(emp.ngayHetHD) && <span className="ml-1 text-xs text-amber-600 font-bold">⏰ SẮP HẾT</span>}
+                        </td>
+                        <td className="py-3 px-3 text-center">{calcAge(emp.ngaySinh)}</td>
+                        <td className="py-3 px-3 text-center"><Button variant="ghost" size="sm" onClick={() => handleView(emp)} className="hover:bg-blue-100 text-blue-600"><Eye className="w-4 h-4 mr-1" />Xem</Button></td>
+                        {hasPermission && (
+                          <td className="py-3 px-3 text-center">
                             <div className="flex items-center justify-center gap-1">
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <Edit2 className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600 hover:text-red-700">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleEdit(emp)} className="h-8 w-8 p-0 hover:bg-blue-100 text-blue-600"><Edit2 className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDelete(emp.id)} className="h-8 w-8 p-0 hover:bg-red-100 text-red-600"><Trash2 className="h-4 w-4" /></Button>
                             </div>
                           </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Detail Modal */}
+          {isDetailOpen && selectedEmployee && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto border-2 border-indigo-100">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-800">Hồ Sơ Nhân Viên</h2>
+                  <button onClick={() => setIsDetailOpen(false)} className="p-1 hover:bg-gray-100 rounded"><X className="w-5 h-5 text-gray-500" /></button>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="mb-4 p-4 bg-indigo-50 rounded-xl border border-indigo-200">
+                  <p className="text-lg font-bold text-gray-800">{selectedEmployee.hoTen}</p>
+                  <p className="text-sm text-indigo-600">{selectedEmployee.chuyenNganh} • {selectedEmployee.loaiHD}</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {[
+                    ['Ngày sinh', selectedEmployee.ngaySinh ? new Date(selectedEmployee.ngaySinh).toLocaleDateString('vi-VN') : '—'],
+                    ['Tuổi', `${calcAge(selectedEmployee.ngaySinh)} tuổi`],
+                    ['Giới tính', selectedEmployee.gioiTinh],
+                    ['CCCD', selectedEmployee.cccd],
+                    ['Ngày cấp CCCD', selectedEmployee.ngayCapCCCD ? new Date(selectedEmployee.ngayCapCCCD).toLocaleDateString('vi-VN') : '—'],
+                    ['Nơi cấp CCCD', selectedEmployee.noiCapCCCD],
+                    ['Ngày thử việc', selectedEmployee.ngayThuViec ? new Date(selectedEmployee.ngayThuViec).toLocaleDateString('vi-VN') : '—'],
+                    ['Ngày chính thức', selectedEmployee.ngayChinhThuc ? new Date(selectedEmployee.ngayChinhThuc).toLocaleDateString('vi-VN') : '—'],
+                    ['Ngày hết hạn HĐ', selectedEmployee.ngayHetHD ? new Date(selectedEmployee.ngayHetHD).toLocaleDateString('vi-VN') : '—'],
+                    ['Loại HĐ', selectedEmployee.loaiHD],
+                    ['Thâm niên', calcSeniority(selectedEmployee.ngayChinhThuc || selectedEmployee.ngayThuViec)],
+                    ['Trình độ', selectedEmployee.trinhDo],
+                    ['Chuyên ngành', selectedEmployee.chuyenNganh],
+                    ['Trường đào tạo', selectedEmployee.truongDaoTao],
+                    ['Năm tốt nghiệp', selectedEmployee.namTotNghiep],
+                    ['Địa chỉ', selectedEmployee.diaChi],
+                  ].map(([label, value]) => (
+                    <div key={label} className="p-3 bg-gray-50 rounded-xl"><p className="text-xs text-gray-500 mb-1">{label}</p><p className="font-medium text-gray-800">{value || '—'}</p></div>
+                  ))}
+                </div>
+                <div className="mt-6"><Button variant="outline" onClick={() => setIsDetailOpen(false)} className="w-full">Đóng</Button></div>
+              </div>
+            </div>
           )}
 
-          {tab === 'attendance' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Chấm Công</CardTitle>
-                <CardDescription>Theo dõi và quản lý chấm công</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Attendance Chart */}
-                  <div>
-                    <h3 className="font-medium text-foreground mb-4">Thống Kê Hàng Ngày</h3>
-                    <div className="space-y-3">
-                      {MOCK_ATTENDANCE.map((record) => (
-                        <div key={record.id} className="p-3 border rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="font-medium text-foreground">{record.date}</p>
-                            <span className="text-sm text-muted-foreground">
-                              Tổng: {record.present + record.absent + record.leave}
-                            </span>
-                          </div>
-                          <div className="flex gap-2 text-sm">
-                            <div className="flex-1 p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded">
-                              <p className="text-xs text-muted-foreground">Có mặt</p>
-                              <p className="font-bold text-emerald-600 dark:text-emerald-400">{record.present}</p>
-                            </div>
-                            <div className="flex-1 p-2 bg-orange-50 dark:bg-orange-900/20 rounded">
-                              <p className="text-xs text-muted-foreground">Nghỉ</p>
-                              <p className="font-bold text-orange-600 dark:text-orange-400">{record.leave}</p>
-                            </div>
-                            <div className="flex-1 p-2 bg-red-50 dark:bg-red-900/20 rounded">
-                              <p className="text-xs text-muted-foreground">Vắng</p>
-                              <p className="font-bold text-red-600 dark:text-red-400">{record.absent}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Attendance Rate */}
-                  <div>
-                    <h3 className="font-medium text-foreground mb-4">Tỷ Lệ Chấm Công</h3>
-                    <div className="space-y-4">
-                      <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <p className="text-sm text-muted-foreground mb-1">Tỷ Lệ Có Mặt</p>
-                        <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">94.25%</p>
-                        <p className="text-xs text-muted-foreground mt-1">Cao hơn 2% so với tháng trước</p>
-                      </div>
-                      <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                        <p className="text-sm text-muted-foreground mb-1">Trung Bình Hôm Nay</p>
-                        <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">82</p>
-                        <p className="text-xs text-muted-foreground mt-1">Người có mặt</p>
-                      </div>
-                    </div>
-                  </div>
+          {/* Add/Edit Modal */}
+          {isModalOpen && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-4xl shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-800">{editingEmployee ? 'Sửa Nhân Viên' : 'Thêm Nhân Viên'}</h2>
+                  <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-gray-100 rounded"><X className="w-5 h-5 text-gray-500" /></button>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {tab === 'evaluation' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Đánh Giá Năng Lực</CardTitle>
-                <CardDescription>Quản lý đánh giá hiệu suất nhân viên</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2 px-2 font-medium text-foreground">Nhân Viên</th>
-                        <th className="text-center py-2 px-2 font-medium text-foreground">Điểm</th>
-                        <th className="text-center py-2 px-2 font-medium text-foreground">Kỳ Đánh Giá</th>
-                        <th className="text-center py-2 px-2 font-medium text-foreground">Trạng Thái</th>
-                        <th className="text-center py-2 px-2 font-medium text-foreground">Thao Tác</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {MOCK_EVALUATION.map((evalItem) => (
-                        <tr key={evalItem.id} className="border-b hover:bg-muted/50">
-                          <td className="py-3 px-2 font-medium text-foreground">{evalItem.employeeName}</td>
-                          <td className="py-3 px-2 text-center">
-                            <div className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/30 rounded">
-                              <span className="font-bold text-blue-700 dark:text-blue-300">{evalItem.score}/10</span>
-                            </div>
-                          </td>
-                          <td className="py-3 px-2 text-center text-muted-foreground">{evalItem.period}</td>
-                          <td className="py-3 px-2 text-center">
-                            <span
-                              className={`text-xs font-medium px-2 py-1 rounded ${
-                                evalItem.status === 'Hoàn thành'
-                                  ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
-                                  : 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300'
-                              }`}
-                            >
-                              {evalItem.status}
-                            </span>
-                          </td>
-                          <td className="py-3 px-2 text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <Edit2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên *</label><Input value={formData.hoTen} onChange={e => setFormData({...formData, hoTen: e.target.value})} className="border-2" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Ngày sinh *</label><Input type="date" value={formData.ngaySinh} onChange={e => setFormData({...formData, ngaySinh: e.target.value})} className="border-2" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Giới tính</label><select value={formData.gioiTinh} onChange={e => setFormData({...formData, gioiTinh: e.target.value})} className="w-full p-2 border-2 rounded-lg">{GIOI_TINH_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Số CCCD *</label><Input value={formData.cccd} onChange={e => setFormData({...formData, cccd: e.target.value})} className="border-2" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Ngày cấp CCCD</label><Input type="date" value={formData.ngayCapCCCD} onChange={e => setFormData({...formData, ngayCapCCCD: e.target.value})} className="border-2" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Nơi cấp CCCD</label><Input value={formData.noiCapCCCD} onChange={e => setFormData({...formData, noiCapCCCD: e.target.value})} className="border-2" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Ngày thử việc</label><Input type="date" value={formData.ngayThuViec} onChange={e => setFormData({...formData, ngayThuViec: e.target.value})} className="border-2" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Ngày chính thức</label><Input type="date" value={formData.ngayChinhThuc} onChange={e => setFormData({...formData, ngayChinhThuc: e.target.value})} className="border-2" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Ngày hết hạn HĐ</label><Input type="date" value={formData.ngayHetHD} onChange={e => setFormData({...formData, ngayHetHD: e.target.value})} className="border-2" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Loại HĐ</label><select value={formData.loaiHD} onChange={e => setFormData({...formData, loaiHD: e.target.value})} className="w-full p-2 border-2 rounded-lg">{LOAI_HD_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Trình độ</label><select value={formData.trinhDo} onChange={e => setFormData({...formData, trinhDo: e.target.value})} className="w-full p-2 border-2 rounded-lg">{TRINH_DO_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}</select></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Chuyên ngành</label><Input value={formData.chuyenNganh} onChange={e => setFormData({...formData, chuyenNganh: e.target.value})} className="border-2" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Trường đào tạo</label><Input value={formData.truongDaoTao} onChange={e => setFormData({...formData, truongDaoTao: e.target.value})} className="border-2" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Năm tốt nghiệp</label><Input value={formData.namTotNghiep} onChange={e => setFormData({...formData, namTotNghiep: e.target.value})} className="border-2" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Liên kết TK</label><Input value={formData.username || ''} onChange={e => setFormData({...formData, username: e.target.value})} placeholder="username tài khoản..." className="border-2" /></div>
+                  <div className="md:col-span-2 lg:col-span-3"><label className="block text-sm font-medium text-gray-700 mb-1">Địa chỉ</label><Input value={formData.diaChi} onChange={e => setFormData({...formData, diaChi: e.target.value})} className="border-2" /></div>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="flex gap-3 mt-6">
+                  <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1">Hủy</Button>
+                  <Button onClick={handleSave} className="flex-1 bg-indigo-600 hover:bg-indigo-700"><Save className="w-4 h-4 mr-2" />{editingEmployee ? 'Cập Nhật' : 'Tạo Mới'}</Button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>

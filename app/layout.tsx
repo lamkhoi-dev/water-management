@@ -1,30 +1,34 @@
+// ==========================================
+// ROOT LAYOUT - Layout gốc của toàn bộ ứng dụng
+// ==========================================
+// Font chữ: Sử dụng font Roboto (theo yêu cầu)
+// Ngôn ngữ: Tiếng Việt (lang="vi")
+// Analytics: Tích hợp Vercel Analytics
+// ==========================================
+
 import React from "react"
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Roboto } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+// Cấu hình font Roboto với các weight cần thiết
+// subsets 'latin' và 'vietnamese' để hỗ trợ tiếng Việt
+const roboto = Roboto({
+  weight: ['300', '400', '500', '700'],
+  subsets: ['latin', 'vietnamese'],
+  display: 'swap',
+})
 
+// Metadata SEO cho trang web
 export const metadata: Metadata = {
-  title: 'BIWASE Long An - Hệ Thống Quản Lý',
-  description: 'Hệ thống quản lý BIWASE Long An - Quản lý kho, nhân sự và hoạt động công ty cấp thoát nước',
-  generator: 'v0.app',
+  title: 'Công ty cổ phần nước BIWASE - Long An | Hệ Thống Quản Lý',
+  description: 'Hệ thống quản lý Công ty cổ phần nước BIWASE - Long An - Quản lý kho, nhân sự và hoạt động công ty',
   icons: {
     icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
+      { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
+      { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
     ],
     apple: '/apple-icon.png',
   },
@@ -36,8 +40,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`font-sans antialiased`}>
+    <html lang="vi">
+      <body className={`${roboto.className} antialiased`}>
         {children}
         <Analytics />
       </body>

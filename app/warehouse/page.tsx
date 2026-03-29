@@ -73,10 +73,10 @@ export default function WarehousePage() {
     code: '',
     name: '',
     unit: '',
-    quantity: 0,
-    priceIn: 0,
-    priceOut: 0,
-    weight: 0,
+    quantity: '' as any,
+    priceIn: '' as any,
+    priceOut: '' as any,
+    weight: '' as any,
     location: '',
     locationImage: '',
     importDate: new Date().toISOString().split('T')[0],
@@ -127,7 +127,7 @@ export default function WarehousePage() {
   const handleImport = () => {
     setEditingProduct(null)
     setModalType('import')
-    setFormData({ code: '', name: '', unit: '', quantity: 0, priceIn: 0, priceOut: 0, weight: 0, location: '', locationImage: '', importDate: new Date().toISOString().split('T')[0] })
+    setFormData({ code: '', name: '', unit: '', quantity: '', priceIn: '', priceOut: '', weight: '', location: '', locationImage: '', importDate: new Date().toISOString().split('T')[0] })
     setIsModalOpen(true)
   }
 
@@ -206,6 +206,7 @@ export default function WarehousePage() {
       userName: user?.name || user?.username || '',
       action: 'Xuất kho',
       quantity: exportQuantity,
+      details: `Xuất ${exportQuantity} ${foundProduct.unit}, giá ${exportPrice.toLocaleString('vi-VN')}đ`,
     })
     localStorage.setItem('historyLog', JSON.stringify(historyLog))
 
@@ -298,7 +299,8 @@ export default function WarehousePage() {
         productName: formData.name,
         userName: user?.name || user?.username || '',
         action: 'Nhập kho',
-        quantity: formData.quantity,
+        quantity: Number(formData.quantity) || 0,
+        details: `Nhập ${formData.quantity} ${formData.unit}, giá ${Number(formData.priceIn).toLocaleString('vi-VN')}đ`,
       })
       localStorage.setItem('historyLog', JSON.stringify(historyLog))
     }
@@ -324,12 +326,11 @@ export default function WarehousePage() {
   return (
     <div className="flex">
       <Sidebar />
-      <div className="flex-1 ml-64">
-        <div className="p-8 bg-gray-50 min-h-screen">
+      <div className="flex-1 md:ml-64">
+        <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Quản Lý Kho</h1>
-            <p className="text-gray-600">Quản lý vật tư, nhập xuất, và kiểm kê kho hàng</p>
+            <h1 className="text-3xl font-bold text-gray-800">Quản Lý Kho</h1>
           </div>
 
           {/* Warehouse Tabs */}
@@ -465,7 +466,7 @@ export default function WarehousePage() {
           {/* Modal Form */}
           {isModalOpen && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className={`bg-white rounded-xl p-6 w-full shadow-2xl max-h-[90vh] overflow-y-auto ${modalType === 'export' ? 'max-w-5xl' : 'max-w-4xl'}`}>
+              <div className={`bg-white rounded-2xl p-6 w-full shadow-2xl max-h-[90vh] overflow-y-auto ${modalType === 'export' ? 'max-w-5xl' : 'max-w-4xl'}`}>
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-gray-800">
                     {modalType === 'export' ? 'Xuất Kho' : (editingProduct ? 'Sửa Sản Phẩm' : 'Nhập Kho')}
