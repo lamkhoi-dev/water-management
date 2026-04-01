@@ -47,7 +47,8 @@ export interface Product {
   priceOut: number
   weight: number
   location: string
-  locationImage: string   // Ảnh sản phẩm (base64)
+  locationImage: string   // Ảnh vị trí lưu kho (base64)
+  productImage: string    // Ảnh sản phẩm (base64)
   importDate: string
 }
 

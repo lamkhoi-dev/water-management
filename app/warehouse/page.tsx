@@ -10,28 +10,28 @@ import { Package, Plus, Edit2, Trash2, Search, X, Save, Warehouse, Factory, Shop
 // Dữ liệu mặc định cho 3 kho
 const DEFAULT_WAREHOUSE_DATA: Record<string, Product[]> = {
   'kho-vat-tu': [
-    { id: 1, code: 'VT001', name: 'Ống PVC 50mm', unit: 'cái', quantity: 250, priceIn: 40000, priceOut: 45000, weight: 2.5, location: 'Kệ A1', locationImage: '', importDate: '2024-01-15' },
-    { id: 2, code: 'VT002', name: 'Van cầu đôi', unit: 'cái', quantity: 45, priceIn: 100000, priceOut: 120000, weight: 1.2, location: 'Kệ A2', locationImage: '', importDate: '2024-01-20' },
-    { id: 3, code: 'VT003', name: 'Bộ lọc nước', unit: 'bộ', quantity: 120, priceIn: 750000, priceOut: 850000, weight: 5, location: 'Kệ B1', locationImage: '', importDate: '2024-02-01' },
-    { id: 4, code: 'VT004', name: 'Bơm nước 5KW', unit: 'cái', quantity: 8, priceIn: 3000000, priceOut: 3500000, weight: 25, location: 'Khu C', locationImage: '', importDate: '2024-02-05' },
-    { id: 5, code: 'VT005', name: 'Thiết bị đo áp suất', unit: 'cái', quantity: 30, priceIn: 400000, priceOut: 450000, weight: 0.5, location: 'Kệ A3', locationImage: '', importDate: '2024-02-10' },
+    { id: 1, code: 'VT001', name: 'Ống PVC 50mm', unit: 'cái', quantity: 250, priceIn: 40000, priceOut: 45000, weight: 2.5, location: 'Kệ A1', locationImage: '', productImage: '', importDate: '2024-01-15' },
+    { id: 2, code: 'VT002', name: 'Van cầu đôi', unit: 'cái', quantity: 45, priceIn: 100000, priceOut: 120000, weight: 1.2, location: 'Kệ A2', locationImage: '', productImage: '', importDate: '2024-01-20' },
+    { id: 3, code: 'VT003', name: 'Bộ lọc nước', unit: 'bộ', quantity: 120, priceIn: 750000, priceOut: 850000, weight: 5, location: 'Kệ B1', locationImage: '', productImage: '', importDate: '2024-02-01' },
+    { id: 4, code: 'VT004', name: 'Bơm nước 5KW', unit: 'cái', quantity: 8, priceIn: 3000000, priceOut: 3500000, weight: 25, location: 'Khu C', locationImage: '', productImage: '', importDate: '2024-02-05' },
+    { id: 5, code: 'VT005', name: 'Thiết bị đo áp suất', unit: 'cái', quantity: 30, priceIn: 400000, priceOut: 450000, weight: 0.5, location: 'Kệ A3', locationImage: '', productImage: '', importDate: '2024-02-10' },
   ],
   'kho-xay-dung': [
-    { id: 1, code: 'XD001', name: 'Xi măng PCB40', unit: 'bao', quantity: 500, priceIn: 85000, priceOut: 95000, weight: 50, location: 'Khu D', locationImage: '', importDate: '2024-01-10' },
-    { id: 2, code: 'XD002', name: 'Thép phi 10', unit: 'cây', quantity: 200, priceIn: 160000, priceOut: 180000, weight: 8, location: 'Khu E', locationImage: '', importDate: '2024-01-18' },
-    { id: 3, code: 'XD003', name: 'Gạch ống', unit: 'viên', quantity: 10000, priceIn: 1200, priceOut: 1500, weight: 2, location: 'Khu F', locationImage: '', importDate: '2024-01-25' },
-    { id: 4, code: 'XD004', name: 'Cát xây dựng', unit: 'm³', quantity: 50, priceIn: 300000, priceOut: 350000, weight: 1500, location: 'Bãi G', locationImage: '', importDate: '2024-02-03' },
+    { id: 1, code: 'XD001', name: 'Xi măng PCB40', unit: 'bao', quantity: 500, priceIn: 85000, priceOut: 95000, weight: 50, location: 'Khu D', locationImage: '', productImage: '', importDate: '2024-01-10' },
+    { id: 2, code: 'XD002', name: 'Thép phi 10', unit: 'cây', quantity: 200, priceIn: 160000, priceOut: 180000, weight: 8, location: 'Khu E', locationImage: '', productImage: '', importDate: '2024-01-18' },
+    { id: 3, code: 'XD003', name: 'Gạch ống', unit: 'viên', quantity: 10000, priceIn: 1200, priceOut: 1500, weight: 2, location: 'Khu F', locationImage: '', productImage: '', importDate: '2024-01-25' },
+    { id: 4, code: 'XD004', name: 'Cát xây dựng', unit: 'm³', quantity: 50, priceIn: 300000, priceOut: 350000, weight: 1500, location: 'Bãi G', locationImage: '', productImage: '', importDate: '2024-02-03' },
   ],
   'kho-thuong-mai': [
-    { id: 1, code: 'TM001', name: 'Đồng hồ nước DN15', unit: 'cái', quantity: 150, priceIn: 200000, priceOut: 250000, weight: 0.8, location: 'Kệ TM1', locationImage: '', importDate: '2024-01-12' },
-    { id: 2, code: 'TM002', name: 'Đồng hồ nước DN20', unit: 'cái', quantity: 100, priceIn: 300000, priceOut: 350000, weight: 1, location: 'Kệ TM1', locationImage: '', importDate: '2024-01-22' },
-    { id: 3, code: 'TM003', name: 'Bình lọc nước gia đình', unit: 'bộ', quantity: 50, priceIn: 1000000, priceOut: 1200000, weight: 3, location: 'Kệ TM2', locationImage: '', importDate: '2024-01-28' },
-    { id: 4, code: 'TM004', name: 'Máy bơm mini', unit: 'cái', quantity: 25, priceIn: 750000, priceOut: 850000, weight: 5, location: 'Kệ TM3', locationImage: '', importDate: '2024-02-06' },
+    { id: 1, code: 'TM001', name: 'Đồng hồ nước DN15', unit: 'cái', quantity: 150, priceIn: 200000, priceOut: 250000, weight: 0.8, location: 'Kệ TM1', locationImage: '', productImage: '', importDate: '2024-01-12' },
+    { id: 2, code: 'TM002', name: 'Đồng hồ nước DN20', unit: 'cái', quantity: 100, priceIn: 300000, priceOut: 350000, weight: 1, location: 'Kệ TM1', locationImage: '', productImage: '', importDate: '2024-01-22' },
+    { id: 3, code: 'TM003', name: 'Bình lọc nước gia đình', unit: 'bộ', quantity: 50, priceIn: 1000000, priceOut: 1200000, weight: 3, location: 'Kệ TM2', locationImage: '', productImage: '', importDate: '2024-01-28' },
+    { id: 4, code: 'TM004', name: 'Máy bơm mini', unit: 'cái', quantity: 25, priceIn: 750000, priceOut: 850000, weight: 5, location: 'Kệ TM3', locationImage: '', productImage: '', importDate: '2024-02-06' },
   ],
   'kho-phong-thi-nghiem': [
-    { id: 1, code: 'TN001', name: 'Bộ test pH nước', unit: 'bộ', quantity: 80, priceIn: 150000, priceOut: 180000, weight: 0.3, location: 'Kệ TN1', locationImage: '', importDate: '2024-01-14' },
-    { id: 2, code: 'TN002', name: 'Hóa chất xử lý nước Chlorine', unit: 'kg', quantity: 200, priceIn: 50000, priceOut: 65000, weight: 1, location: 'Khu TN2', locationImage: '', importDate: '2024-01-20' },
-    { id: 3, code: 'TN003', name: 'Máy đo độ đục', unit: 'cái', quantity: 10, priceIn: 2500000, priceOut: 3000000, weight: 2, location: 'Kệ TN1', locationImage: '', importDate: '2024-02-01' },
+    { id: 1, code: 'TN001', name: 'Bộ test pH nước', unit: 'bộ', quantity: 80, priceIn: 150000, priceOut: 180000, weight: 0.3, location: 'Kệ TN1', locationImage: '', productImage: '', importDate: '2024-01-14' },
+    { id: 2, code: 'TN002', name: 'Hóa chất xử lý nước Chlorine', unit: 'kg', quantity: 200, priceIn: 50000, priceOut: 65000, weight: 1, location: 'Khu TN2', locationImage: '', productImage: '', importDate: '2024-01-20' },
+    { id: 3, code: 'TN003', name: 'Máy đo độ đục', unit: 'cái', quantity: 10, priceIn: 2500000, priceOut: 3000000, weight: 2, location: 'Kệ TN1', locationImage: '', productImage: '', importDate: '2024-02-01' },
   ],
 }
 
@@ -52,7 +52,8 @@ interface Product {
   priceOut: number
   weight: number
   location: string
-  locationImage: string
+  locationImage: string   // Ảnh vị trí lưu kho
+  productImage: string    // Ảnh sản phẩm
   importDate: string
 }
 
@@ -79,6 +80,7 @@ export default function WarehousePage() {
     weight: '' as any,
     location: '',
     locationImage: '',
+    productImage: '',
     importDate: new Date().toISOString().split('T')[0],
   })
 
@@ -127,7 +129,7 @@ export default function WarehousePage() {
   const handleImport = () => {
     setEditingProduct(null)
     setModalType('import')
-    setFormData({ code: '', name: '', unit: '', quantity: '', priceIn: '', priceOut: '', weight: '', location: '', locationImage: '', importDate: new Date().toISOString().split('T')[0] })
+    setFormData({ code: '', name: '', unit: '', quantity: '', priceIn: '', priceOut: '', weight: '', location: '', locationImage: '', productImage: '', importDate: new Date().toISOString().split('T')[0] })
     setIsModalOpen(true)
   }
 
@@ -228,6 +230,7 @@ export default function WarehousePage() {
       weight: product.weight,
       location: product.location,
       locationImage: product.locationImage,
+      productImage: product.productImage || '',
       importDate: product.importDate,
     })
     setIsModalOpen(true)
@@ -307,13 +310,25 @@ export default function WarehousePage() {
     setIsModalOpen(false)
   }
 
-  // Xử lý upload ảnh
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Xử lý upload ảnh vị trí
+  const handleLocationImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       const reader = new FileReader()
       reader.onloadend = () => {
         setFormData({ ...formData, locationImage: reader.result as string })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  // Xử lý upload ảnh sản phẩm
+  const handleProductImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setFormData({ ...formData, productImage: reader.result as string })
       }
       reader.readAsDataURL(file)
     }
@@ -712,17 +727,52 @@ export default function WarehousePage() {
                       />
                     </div>
 
+                    {/* Ảnh sản phẩm - nằm dưới mục trọng lượng */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Ảnh vị trí</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">📷 Ảnh sản phẩm</label>
+                      <div className="flex gap-4 items-start">
+                        <div className="flex-1">
+                          <label className="flex items-center gap-2 px-4 py-3 bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
+                            <Upload className="w-5 h-5 text-blue-500" />
+                            <span className="text-sm text-blue-600">Upload ảnh sản phẩm</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleProductImageUpload}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                        {formData.productImage && (
+                          <div className="relative">
+                            <img
+                              src={formData.productImage}
+                              alt="Ảnh sản phẩm"
+                              className="w-24 h-24 object-cover rounded-lg border-2 border-blue-200"
+                            />
+                            <button
+                              onClick={() => setFormData({ ...formData, productImage: '' })}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Ảnh vị trí kho */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">📍 Ảnh vị trí</label>
                       <div className="flex gap-4 items-start">
                         <div className="flex-1">
                           <label className="flex items-center gap-2 px-4 py-3 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
                             <Upload className="w-5 h-5 text-gray-500" />
-                            <span className="text-sm text-gray-600">Upload ảnh</span>
+                            <span className="text-sm text-gray-600">Upload ảnh vị trí</span>
                             <input
                               type="file"
                               accept="image/*"
-                              onChange={handleImageUpload}
+                              onChange={handleLocationImageUpload}
                               className="hidden"
                             />
                           </label>
@@ -731,7 +781,7 @@ export default function WarehousePage() {
                           <div className="relative">
                             <img
                               src={formData.locationImage}
-                              alt="Preview"
+                              alt="Ảnh vị trí"
                               className="w-24 h-24 object-cover rounded-lg border-2 border-gray-200"
                             />
                             <button

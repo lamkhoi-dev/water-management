@@ -27,7 +27,7 @@ export default function InventoryPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [editFormData, setEditFormData] = useState({
-    code: '', name: '', unit: '', quantity: 0, priceIn: 0, priceOut: 0, weight: 0, location: '', locationImage: '', importDate: ''
+    code: '', name: '', unit: '', quantity: 0, priceIn: 0, priceOut: 0, weight: 0, location: '', locationImage: '', productImage: '', importDate: ''
   })
 
   useEffect(() => {
@@ -62,7 +62,7 @@ export default function InventoryPage() {
     setEditFormData({
       code: product.code, name: product.name, unit: product.unit, quantity: product.quantity,
       priceIn: product.priceIn, priceOut: product.priceOut, weight: product.weight,
-      location: product.location, locationImage: product.locationImage, importDate: product.importDate,
+      location: product.location, locationImage: product.locationImage, productImage: product.productImage || '', importDate: product.importDate,
     })
     setIsEditModalOpen(true)
   }
@@ -76,7 +76,8 @@ export default function InventoryPage() {
       if (old.weight !== editFormData.weight) changes.push(`Trọng lượng: ${old.weight}kg → ${editFormData.weight}kg`)
       if (old.name !== editFormData.name) changes.push(`Tên: ${old.name} → ${editFormData.name}`)
       if (old.location !== editFormData.location) changes.push(`Vị trí: ${old.location} → ${editFormData.location}`)
-      if (old.locationImage !== editFormData.locationImage) changes.push('Ảnh: đã cập nhật')
+      if (old.locationImage !== editFormData.locationImage) changes.push('Ảnh vị trí: đã cập nhật')
+      if ((old.productImage || '') !== editFormData.productImage) changes.push('Ảnh sản phẩm: đã cập nhật')
       if (old.priceIn !== editFormData.priceIn) changes.push(`Giá nhập: ${old.priceIn.toLocaleString()} → ${editFormData.priceIn.toLocaleString()}`)
       if (old.priceOut !== editFormData.priceOut) changes.push(`Giá xuất: ${old.priceOut.toLocaleString()} → ${editFormData.priceOut.toLocaleString()}`)
     }
@@ -119,7 +120,16 @@ export default function InventoryPage() {
     }
   }
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProductImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => setEditFormData({ ...editFormData, productImage: reader.result as string })
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleLocationImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       const reader = new FileReader()
@@ -231,10 +241,17 @@ export default function InventoryPage() {
                   <p className="text-sm font-mono text-sky-600">{selectedProduct.code}</p>
                 </div>
                 {/* Ảnh sản phẩm */}
+                {selectedProduct.productImage && (
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-500 mb-2">📷 Hình ảnh sản phẩm</p>
+                    <img src={selectedProduct.productImage} alt={selectedProduct.name} className="w-full h-64 object-cover rounded-xl border-2 border-blue-200" />
+                  </div>
+                )}
+                {/* Ảnh vị trí */}
                 {selectedProduct.locationImage && (
                   <div className="mb-4">
-                    <p className="text-sm text-gray-500 mb-2">Hình ảnh sản phẩm</p>
-                    <img src={selectedProduct.locationImage} alt={selectedProduct.name} className="w-full h-64 object-cover rounded-xl border-2 border-gray-200" />
+                    <p className="text-sm text-gray-500 mb-2">📍 Ảnh vị trí kho</p>
+                    <img src={selectedProduct.locationImage} alt="Vị trí" className="w-full h-48 object-cover rounded-xl border-2 border-gray-200" />
                   </div>
                 )}
                 {/* Chi tiết */}
@@ -274,15 +291,30 @@ export default function InventoryPage() {
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Vị trí</label><Input value={editFormData.location} onChange={(e) => setEditFormData({...editFormData, location: e.target.value})} className="border-2" /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Ngày nhập kho</label><Input type="date" value={editFormData.importDate} onChange={(e) => setEditFormData({...editFormData, importDate: e.target.value})} className="border-2" /></div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Ảnh sản phẩm</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">📷 Ảnh sản phẩm</label>
+                    <div className="flex gap-4 items-start">
+                      <label className="flex items-center gap-2 px-4 py-3 bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors flex-1">
+                        <Upload className="w-5 h-5 text-blue-500" /><span className="text-sm text-blue-600">Upload ảnh SP</span>
+                        <input type="file" accept="image/*" onChange={handleProductImageUpload} className="hidden" />
+                      </label>
+                      {editFormData.productImage && (
+                        <div className="relative">
+                          <img src={editFormData.productImage} alt="Ảnh SP" className="w-24 h-24 object-cover rounded-lg border-2 border-blue-200" />
+                          <button onClick={() => setEditFormData({...editFormData, productImage: ''})} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"><X className="w-4 h-4" /></button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">📍 Ảnh vị trí</label>
                     <div className="flex gap-4 items-start">
                       <label className="flex items-center gap-2 px-4 py-3 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors flex-1">
-                        <Upload className="w-5 h-5 text-gray-500" /><span className="text-sm text-gray-600">Upload ảnh</span>
-                        <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                        <Upload className="w-5 h-5 text-gray-500" /><span className="text-sm text-gray-600">Upload ảnh vị trí</span>
+                        <input type="file" accept="image/*" onChange={handleLocationImageUpload} className="hidden" />
                       </label>
                       {editFormData.locationImage && (
                         <div className="relative">
-                          <img src={editFormData.locationImage} alt="Preview" className="w-24 h-24 object-cover rounded-lg border-2" />
+                          <img src={editFormData.locationImage} alt="Ảnh vị trí" className="w-24 h-24 object-cover rounded-lg border-2" />
                           <button onClick={() => setEditFormData({...editFormData, locationImage: ''})} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"><X className="w-4 h-4" /></button>
                         </div>
                       )}
