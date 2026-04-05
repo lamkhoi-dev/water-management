@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { History, Calendar } from 'lucide-react'
 import { type HistoryEntry } from '@/lib/constants'
+import { getHistoryLog } from '@/lib/db'
 
 export default function HistoryPage() {
   const [user, setUser] = useState<any>(null)
@@ -18,8 +19,7 @@ export default function HistoryPage() {
     const userData = localStorage.getItem('user')
     if (!userData) { window.location.href = '/'; return }
     setUser(JSON.parse(userData))
-    const savedHistory = localStorage.getItem('historyLog')
-    if (savedHistory) setHistoryLog(JSON.parse(savedHistory))
+    getHistoryLog().then(data => setHistoryLog(data))
   }, [])
 
   const filteredHistory = historyLog.filter((entry) => {

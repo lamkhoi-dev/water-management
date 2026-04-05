@@ -4,13 +4,8 @@ import { useEffect, useState } from 'react'
 import { Sidebar } from '@/components/sidebar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { User, Briefcase, GraduationCap, Calendar, MapPin, CreditCard, Clock } from 'lucide-react'
-
-interface Employee {
-  id: number; hoTen: string; ngaySinh: string; gioiTinh: string; cccd: string
-  ngayCapCCCD: string; noiCapCCCD: string; ngayThuViec: string; ngayChinhThuc: string
-  ngayHetHD: string; loaiHD: string; trinhDo: string; chuyenNganh: string
-  truongDaoTao: string; namTotNghiep: string; diaChi: string; username?: string
-}
+import { type Employee } from '@/lib/constants'
+import { getEmployeeByUsername } from '@/lib/db'
 
 const calcAge = (dob: string): number => dob ? Math.floor((Date.now() - new Date(dob).getTime()) / 31557600000) : 0
 
@@ -31,13 +26,10 @@ export default function DashboardPage() {
     const parsedUser = JSON.parse(userData)
     setUser(parsedUser)
 
-    // Đồng bộ: tìm nhân viên theo username đang đăng nhập
-    const savedEmp = localStorage.getItem('employees')
-    if (savedEmp) {
-      const employees: Employee[] = JSON.parse(savedEmp)
-      const matched = employees.find(e => e.username === parsedUser.username)
-      if (matched) setEmployee(matched)
-    }
+    // Tìm nhân viên theo username đang đăng nhập (từ Supabase)
+    getEmployeeByUsername(parsedUser.username).then(emp => {
+      if (emp) setEmployee(emp)
+    })
   }, [])
 
   if (!user) return <div className="flex items-center justify-center h-screen">Loading...</div>

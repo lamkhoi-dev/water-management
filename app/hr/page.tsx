@@ -6,26 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Users, Plus, Edit2, Trash2, Search, X, Save, Eye, Bell, AlertTriangle } from 'lucide-react'
-import { getAccounts } from '@/lib/constants'
-
-interface Employee {
-  id: number; hoTen: string; ngaySinh: string; gioiTinh: string; cccd: string
-  ngayCapCCCD: string; noiCapCCCD: string; ngayThuViec: string; ngayChinhThuc: string
-  ngayHetHD: string; loaiHD: string; trinhDo: string; chuyenNganh: string
-  truongDaoTao: string; namTotNghiep: string; diaChi: string; username?: string
-}
+import { type Employee } from '@/lib/constants'
+import { getEmployeesFromDB, createEmployee, updateEmployee, deleteEmployeeFromDB } from '@/lib/db'
 
 const LOAI_HD_OPTIONS = ['Chính thức', 'Thử việc', 'Cộng tác viên', 'Thời vụ']
 const GIOI_TINH_OPTIONS = ['Nam', 'Nữ']
 const TRINH_DO_OPTIONS = ['Tiến sĩ', 'Thạc sĩ', 'Đại học', 'Cao đẳng', 'Trung cấp', 'Phổ thông']
 
-// Tính tuổi từ ngày sinh
 const calcAge = (dob: string): number => {
   if (!dob) return 0
   return Math.floor((Date.now() - new Date(dob).getTime()) / 31557600000)
 }
 
-// Tính thâm niên (năm) từ ngày làm việc
 const calcSeniority = (date: string): string => {
   if (!date) return '0'
   const years = Math.floor((Date.now() - new Date(date).getTime()) / 31557600000)
@@ -33,7 +25,6 @@ const calcSeniority = (date: string): string => {
   return years > 0 ? `${years} năm ${months} tháng` : `${months} tháng`
 }
 
-// Kiểm tra hợp đồng sắp hết hạn (≤30 ngày)
 const isExpiringSoon = (date: string): boolean => {
   if (!date) return false
   const diff = new Date(date).getTime() - Date.now()
@@ -44,15 +35,6 @@ const isExpired = (date: string): boolean => {
   if (!date) return false
   return new Date(date).getTime() < Date.now()
 }
-
-// Mock data nhân viên mẫu
-const DEFAULT_EMPLOYEES: Employee[] = [
-  { id: 1, hoTen: 'Nguyễn Văn A', ngaySinh: '1990-05-12', gioiTinh: 'Nam', cccd: '079012345678', ngayCapCCCD: '2021-03-15', noiCapCCCD: 'CA Long An', ngayThuViec: '2023-01-10', ngayChinhThuc: '2023-04-10', ngayHetHD: '2026-04-10', loaiHD: 'Chính thức', trinhDo: 'Đại học', chuyenNganh: 'Quản lý môi trường', truongDaoTao: 'ĐH Cần Thơ', namTotNghiep: '2014', diaChi: 'Huyện Đức Hòa, Long An', username: 'kho' },
-  { id: 2, hoTen: 'Trần Thị B', ngaySinh: '1992-08-22', gioiTinh: 'Nữ', cccd: '079087654321', ngayCapCCCD: '2021-05-20', noiCapCCCD: 'CA TP.HCM', ngayThuViec: '2022-06-01', ngayChinhThuc: '2022-09-01', ngayHetHD: '2026-09-01', loaiHD: 'Chính thức', trinhDo: 'Thạc sĩ', chuyenNganh: 'Kế toán tài chính', truongDaoTao: 'ĐH Kinh tế TP.HCM', namTotNghiep: '2016', diaChi: 'Quận 7, TP.HCM', username: 'hr' },
-  { id: 3, hoTen: 'Lê Văn C', ngaySinh: '1988-02-14', gioiTinh: 'Nam', cccd: '079011223344', ngayCapCCCD: '2020-01-10', noiCapCCCD: 'CA Long An', ngayThuViec: '2020-03-15', ngayChinhThuc: '2020-06-15', ngayHetHD: '2026-06-15', loaiHD: 'Chính thức', trinhDo: 'Đại học', chuyenNganh: 'Kế toán', truongDaoTao: 'ĐH Kinh tế TP.HCM', namTotNghiep: '2012', diaChi: 'Châu Thành, Long An', username: 'ketoan' },
-  { id: 4, hoTen: 'Phạm Thị D', ngaySinh: '1985-11-30', gioiTinh: 'Nữ', cccd: '079055667788', ngayCapCCCD: '2019-07-22', noiCapCCCD: 'CA Long An', ngayThuViec: '2018-01-10', ngayChinhThuc: '2018-04-10', ngayHetHD: '2026-04-15', loaiHD: 'Chính thức', trinhDo: 'Thạc sĩ', chuyenNganh: 'Quản trị kinh doanh', truongDaoTao: 'ĐH Kinh tế TP.HCM', namTotNghiep: '2010', diaChi: 'TP. Tân An, Long An', username: 'truongphong' },
-  { id: 5, hoTen: 'Đặng Văn E', ngaySinh: '1980-07-04', gioiTinh: 'Nam', cccd: '079099887766', ngayCapCCCD: '2019-01-05', noiCapCCCD: 'CA Long An', ngayThuViec: '2015-01-01', ngayChinhThuc: '2015-04-01', ngayHetHD: '2027-01-01', loaiHD: 'Chính thức', trinhDo: 'Tiến sĩ', chuyenNganh: 'Kỹ thuật môi trường', truongDaoTao: 'ĐH Bách Khoa TP.HCM', namTotNghiep: '2006', diaChi: 'TP. Tân An, Long An', username: 'giamdoc' },
-]
 
 export default function HRPage() {
   const [user, setUser] = useState<any>(null)
@@ -68,26 +50,22 @@ export default function HRPage() {
     chuyenNganh: '', truongDaoTao: '', namTotNghiep: '', diaChi: '', username: '',
   })
 
+  const loadEmployees = async () => {
+    const data = await getEmployeesFromDB()
+    setEmployees(data)
+  }
+
   useEffect(() => {
     const userData = localStorage.getItem('user')
     if (!userData) { window.location.href = '/'; return }
     setUser(JSON.parse(userData))
-    const savedEmp = localStorage.getItem('employees')
-    if (savedEmp) { setEmployees(JSON.parse(savedEmp)) }
-    else { setEmployees(DEFAULT_EMPLOYEES); localStorage.setItem('employees', JSON.stringify(DEFAULT_EMPLOYEES)) }
+    loadEmployees()
   }, [])
-
-  useEffect(() => {
-    if (employees.length > 0) localStorage.setItem('employees', JSON.stringify(employees))
-  }, [employees])
 
   const canManageHR = () => {
     if (!user) return false
-    const accounts = getAccounts()
-    const acc = accounts.find((a: any) => a.username === user.username)
-    if (!acc) return false
-    const perms = Array.isArray(acc.chucNang) ? acc.chucNang : [acc.chucNang]
-    return perms.includes('quan-ly-nhan-su') || perms.includes('them-tai-khoan') || acc.isAdmin
+    const perms = Array.isArray(user.chucNang) ? user.chucNang : [user.chucNang || '']
+    return perms.includes('quan-ly-nhan-su') || perms.includes('them-tai-khoan') || user.isAdmin
   }
 
   const filteredEmployees = employees.filter(e => e.hoTen.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -104,17 +82,21 @@ export default function HRPage() {
   const handleEdit = (emp: Employee) => { setEditingEmployee(emp); setFormData(emp); setIsModalOpen(true) }
   const handleView = (emp: Employee) => { setSelectedEmployee(emp); setIsDetailOpen(true) }
 
-  const handleDelete = (id: number) => {
-    if (confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) setEmployees(prev => prev.filter(e => e.id !== id))
+  const handleDelete = async (id: number) => {
+    if (confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) {
+      await deleteEmployeeFromDB(id)
+      await loadEmployees()
+    }
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.hoTen || !formData.ngaySinh || !formData.cccd) { alert('Vui lòng điền đầy đủ thông tin bắt buộc! (Họ tên, Ngày sinh, CCCD)'); return }
-    if (editingEmployee) { setEmployees(prev => prev.map(e => e.id === editingEmployee.id ? formData : e)) }
-    else {
-      const newId = Math.max(...employees.map(e => e.id), 0) + 1
-      setEmployees(prev => [...prev, { ...formData, id: newId }])
+    if (editingEmployee) {
+      await updateEmployee(editingEmployee.id, formData)
+    } else {
+      await createEmployee(formData)
     }
+    await loadEmployees()
     setIsModalOpen(false)
   }
 

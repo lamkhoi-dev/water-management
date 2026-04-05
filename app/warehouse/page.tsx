@@ -6,34 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Package, Plus, Edit2, Trash2, Search, X, Save, Warehouse, Factory, ShoppingBag, Building, Upload, LogIn, LogOut, FlaskConical } from 'lucide-react'
-
-// Dữ liệu mặc định cho 3 kho
-const DEFAULT_WAREHOUSE_DATA: Record<string, Product[]> = {
-  'kho-vat-tu': [
-    { id: 1, code: 'VT001', name: 'Ống PVC 50mm', unit: 'cái', quantity: 250, priceIn: 40000, priceOut: 45000, weight: 2.5, location: 'Kệ A1', locationImage: '', productImage: '', importDate: '2024-01-15' },
-    { id: 2, code: 'VT002', name: 'Van cầu đôi', unit: 'cái', quantity: 45, priceIn: 100000, priceOut: 120000, weight: 1.2, location: 'Kệ A2', locationImage: '', productImage: '', importDate: '2024-01-20' },
-    { id: 3, code: 'VT003', name: 'Bộ lọc nước', unit: 'bộ', quantity: 120, priceIn: 750000, priceOut: 850000, weight: 5, location: 'Kệ B1', locationImage: '', productImage: '', importDate: '2024-02-01' },
-    { id: 4, code: 'VT004', name: 'Bơm nước 5KW', unit: 'cái', quantity: 8, priceIn: 3000000, priceOut: 3500000, weight: 25, location: 'Khu C', locationImage: '', productImage: '', importDate: '2024-02-05' },
-    { id: 5, code: 'VT005', name: 'Thiết bị đo áp suất', unit: 'cái', quantity: 30, priceIn: 400000, priceOut: 450000, weight: 0.5, location: 'Kệ A3', locationImage: '', productImage: '', importDate: '2024-02-10' },
-  ],
-  'kho-xay-dung': [
-    { id: 1, code: 'XD001', name: 'Xi măng PCB40', unit: 'bao', quantity: 500, priceIn: 85000, priceOut: 95000, weight: 50, location: 'Khu D', locationImage: '', productImage: '', importDate: '2024-01-10' },
-    { id: 2, code: 'XD002', name: 'Thép phi 10', unit: 'cây', quantity: 200, priceIn: 160000, priceOut: 180000, weight: 8, location: 'Khu E', locationImage: '', productImage: '', importDate: '2024-01-18' },
-    { id: 3, code: 'XD003', name: 'Gạch ống', unit: 'viên', quantity: 10000, priceIn: 1200, priceOut: 1500, weight: 2, location: 'Khu F', locationImage: '', productImage: '', importDate: '2024-01-25' },
-    { id: 4, code: 'XD004', name: 'Cát xây dựng', unit: 'm³', quantity: 50, priceIn: 300000, priceOut: 350000, weight: 1500, location: 'Bãi G', locationImage: '', productImage: '', importDate: '2024-02-03' },
-  ],
-  'kho-thuong-mai': [
-    { id: 1, code: 'TM001', name: 'Đồng hồ nước DN15', unit: 'cái', quantity: 150, priceIn: 200000, priceOut: 250000, weight: 0.8, location: 'Kệ TM1', locationImage: '', productImage: '', importDate: '2024-01-12' },
-    { id: 2, code: 'TM002', name: 'Đồng hồ nước DN20', unit: 'cái', quantity: 100, priceIn: 300000, priceOut: 350000, weight: 1, location: 'Kệ TM1', locationImage: '', productImage: '', importDate: '2024-01-22' },
-    { id: 3, code: 'TM003', name: 'Bình lọc nước gia đình', unit: 'bộ', quantity: 50, priceIn: 1000000, priceOut: 1200000, weight: 3, location: 'Kệ TM2', locationImage: '', productImage: '', importDate: '2024-01-28' },
-    { id: 4, code: 'TM004', name: 'Máy bơm mini', unit: 'cái', quantity: 25, priceIn: 750000, priceOut: 850000, weight: 5, location: 'Kệ TM3', locationImage: '', productImage: '', importDate: '2024-02-06' },
-  ],
-  'kho-phong-thi-nghiem': [
-    { id: 1, code: 'TN001', name: 'Bộ test pH nước', unit: 'bộ', quantity: 80, priceIn: 150000, priceOut: 180000, weight: 0.3, location: 'Kệ TN1', locationImage: '', productImage: '', importDate: '2024-01-14' },
-    { id: 2, code: 'TN002', name: 'Hóa chất xử lý nước Chlorine', unit: 'kg', quantity: 200, priceIn: 50000, priceOut: 65000, weight: 1, location: 'Khu TN2', locationImage: '', productImage: '', importDate: '2024-01-20' },
-    { id: 3, code: 'TN003', name: 'Máy đo độ đục', unit: 'cái', quantity: 10, priceIn: 2500000, priceOut: 3000000, weight: 2, location: 'Kệ TN1', locationImage: '', productImage: '', importDate: '2024-02-01' },
-  ],
-}
+import { type Product } from '@/lib/constants'
+import { getProductsByWarehouse, createProduct, updateProduct, deleteProduct, addHistoryEntry, uploadImage } from '@/lib/db'
 
 const WAREHOUSES = [
   { id: 'kho-vat-tu', name: 'Kho Vật Tư Nhà Máy', icon: Factory, color: 'blue' },
@@ -42,27 +16,12 @@ const WAREHOUSES = [
   { id: 'kho-thuong-mai', name: 'Kho Thương Mại', icon: ShoppingBag, color: 'green' },
 ]
 
-interface Product {
-  id: number
-  code: string
-  name: string
-  unit: string
-  quantity: number
-  priceIn: number
-  priceOut: number
-  weight: number
-  location: string
-  locationImage: string   // Ảnh vị trí lưu kho
-  productImage: string    // Ảnh sản phẩm
-  importDate: string
-}
-
 export default function WarehousePage() {
   const [user, setUser] = useState<any>(null)
   const [selectedWarehouse, setSelectedWarehouse] = useState('kho-vat-tu')
   const [searchTerm, setSearchTerm] = useState('')
-  const [warehouseData, setWarehouseData] = useState<Record<string, Product[]>>(DEFAULT_WAREHOUSE_DATA)
-  const [deletedProducts, setDeletedProducts] = useState<Record<string, Product[]>>({ 'kho-vat-tu': [], 'kho-xay-dung': [], 'kho-phong-thi-nghiem': [], 'kho-thuong-mai': [] })
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalType, setModalType] = useState<'import' | 'export'>('import')
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
@@ -83,42 +42,32 @@ export default function WarehousePage() {
     productImage: '',
     importDate: new Date().toISOString().split('T')[0],
   })
+  // File refs cho upload ảnh (thay vì base64)
+  const [productImageFile, setProductImageFile] = useState<File | null>(null)
+  const [locationImageFile, setLocationImageFile] = useState<File | null>(null)
+
+  // Load products từ Supabase khi chọn kho
+  const loadProducts = async (warehouseId: string) => {
+    setLoading(true)
+    const data = await getProductsByWarehouse(warehouseId)
+    setProducts(data)
+    setLoading(false)
+  }
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
-    if (!userData) {
-      window.location.href = '/'
-      return
-    }
-    const parsed = JSON.parse(userData)
-    setUser(parsed)
-
-    // Load data từ localStorage nếu có
-    const savedData = localStorage.getItem('warehouseData')
-    if (savedData) {
-      setWarehouseData(JSON.parse(savedData))
-    }
-
-    // Load deleted products
-    const savedDeleted = localStorage.getItem('deletedProducts')
-    if (savedDeleted) {
-      setDeletedProducts(JSON.parse(savedDeleted))
-    }
+    if (!userData) { window.location.href = '/'; return }
+    setUser(JSON.parse(userData))
+    loadProducts('kho-vat-tu')
   }, [])
 
-  // Lưu data vào localStorage khi thay đổi
+  // Reload khi đổi kho
   useEffect(() => {
-    localStorage.setItem('warehouseData', JSON.stringify(warehouseData))
-  }, [warehouseData])
+    if (user) loadProducts(selectedWarehouse)
+  }, [selectedWarehouse])
 
-  // Lưu deleted products vào localStorage
-  useEffect(() => {
-    localStorage.setItem('deletedProducts', JSON.stringify(deletedProducts))
-  }, [deletedProducts])
-
-  const currentItems = warehouseData[selectedWarehouse] || []
-  const filteredItems = currentItems.filter(
-    (item) =>
+  const filteredItems = products.filter(
+    (item: Product) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.code.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -130,6 +79,8 @@ export default function WarehousePage() {
     setEditingProduct(null)
     setModalType('import')
     setFormData({ code: '', name: '', unit: '', quantity: '', priceIn: '', priceOut: '', weight: '', location: '', locationImage: '', productImage: '', importDate: new Date().toISOString().split('T')[0] })
+    setProductImageFile(null)
+    setLocationImageFile(null)
     setIsModalOpen(true)
   }
 
@@ -147,8 +98,8 @@ export default function WarehousePage() {
   const handleSearchExportCode = (code: string) => {
     const upperCode = code.toUpperCase()
     setExportCodeInput(upperCode)
-    
-    const product = currentItems.find(p => p.code === upperCode)
+
+    const product = products.find(p => p.code === upperCode)
     if (product) {
       setFoundProduct(product)
       setExportQuantity(0)
@@ -161,45 +112,19 @@ export default function WarehousePage() {
   }
 
   // Xác nhận xuất kho
-  const handleConfirmExport = () => {
-    if (!foundProduct) {
-      alert('Không tìm thấy sản phẩm!')
-      return
-    }
-    if (exportQuantity <= 0) {
-      alert('Số lượng xuất phải lớn hơn 0!')
-      return
-    }
+  const handleConfirmExport = async () => {
+    if (!foundProduct) { alert('Không tìm thấy sản phẩm!'); return }
+    if (exportQuantity <= 0) { alert('Số lượng xuất phải lớn hơn 0!'); return }
     if (exportQuantity > foundProduct.quantity) {
       alert(`Số lượng tồn kho không đủ! Hiện có: ${foundProduct.quantity} ${foundProduct.unit}`)
       return
     }
 
-    // Cập nhật số lượng trong kho
-    setWarehouseData(prev => ({
-      ...prev,
-      [selectedWarehouse]: prev[selectedWarehouse].map(p =>
-        p.id === foundProduct.id 
-          ? { ...p, quantity: p.quantity - exportQuantity }
-          : p
-      )
-    }))
-
-    // Cập nhật tồn kho (inventoryData)
-    const savedInventory = JSON.parse(localStorage.getItem('inventoryData') || '{"kho-vat-tu":[],"kho-xay-dung":[],"kho-phong-thi-nghiem":[],"kho-thuong-mai":[]}')
-    const warehouseInventory = savedInventory[selectedWarehouse] || []
-    const existingIdx = warehouseInventory.findIndex((p: Product) => p.code === foundProduct.code)
-    if (existingIdx >= 0) {
-      warehouseInventory[existingIdx] = { ...foundProduct, quantity: foundProduct.quantity - exportQuantity }
-    } else {
-      warehouseInventory.push({ ...foundProduct, quantity: foundProduct.quantity - exportQuantity })
-    }
-    savedInventory[selectedWarehouse] = warehouseInventory
-    localStorage.setItem('inventoryData', JSON.stringify(savedInventory))
+    // Cập nhật số lượng trong DB
+    await updateProduct(foundProduct.id, { quantity: foundProduct.quantity - exportQuantity })
 
     // Log lịch sử xuất kho
-    const historyLog = JSON.parse(localStorage.getItem('historyLog') || '[]')
-    historyLog.push({
+    await addHistoryEntry({
       date: new Date().toLocaleDateString('vi-VN'),
       time: new Date().toLocaleTimeString('vi-VN'),
       warehouse: currentWarehouse?.name || '',
@@ -210,10 +135,10 @@ export default function WarehousePage() {
       quantity: exportQuantity,
       details: `Xuất ${exportQuantity} ${foundProduct.unit}, giá ${exportPrice.toLocaleString('vi-VN')}đ`,
     })
-    localStorage.setItem('historyLog', JSON.stringify(historyLog))
 
     alert(`Đã xuất ${exportQuantity} ${foundProduct.unit} ${foundProduct.name}`)
     setIsModalOpen(false)
+    await loadProducts(selectedWarehouse)
   }
 
   // Sửa sản phẩm
@@ -233,68 +158,57 @@ export default function WarehousePage() {
       productImage: product.productImage || '',
       importDate: product.importDate,
     })
+    setProductImageFile(null)
+    setLocationImageFile(null)
     setIsModalOpen(true)
   }
 
-  // Xóa sản phẩm (chuyển sang deletedProducts)
-  const handleDelete = (productId: number) => {
+  // Xóa sản phẩm (soft delete trong DB)
+  const handleDelete = async (productId: number) => {
     if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
-      const productToDelete = currentItems.find(p => p.id === productId)
-      if (productToDelete) {
-        // Chuyển sang deletedProducts
-        setDeletedProducts(prev => ({
-          ...prev,
-          [selectedWarehouse]: [...prev[selectedWarehouse], productToDelete]
-        }))
-        // Xóa khỏi warehouseData
-        setWarehouseData(prev => ({
-          ...prev,
-          [selectedWarehouse]: prev[selectedWarehouse].filter(p => p.id !== productId)
-        }))
-      }
+      await deleteProduct(productId)
+      await loadProducts(selectedWarehouse)
     }
   }
 
   // Lưu sản phẩm (thêm mới hoặc cập nhật)
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.code || !formData.name || !formData.unit) {
       alert('Vui lòng điền đầy đủ thông tin bắt buộc!')
       return
     }
 
+    // Upload ảnh nếu có file mới
+    let productImageUrl = formData.productImage
+    let locationImageUrl = formData.locationImage
+
+    if (productImageFile) {
+      const url = await uploadImage(productImageFile, 'products')
+      if (url) productImageUrl = url
+    }
+    if (locationImageFile) {
+      const url = await uploadImage(locationImageFile, 'locations')
+      if (url) locationImageUrl = url
+    }
+
     if (editingProduct) {
       // Cập nhật sản phẩm
-      setWarehouseData(prev => ({
-        ...prev,
-        [selectedWarehouse]: prev[selectedWarehouse].map(p =>
-          p.id === editingProduct.id ? { ...p, ...formData } : p
-        )
-      }))
+      await updateProduct(editingProduct.id, {
+        ...formData,
+        productImage: productImageUrl,
+        locationImage: locationImageUrl,
+      })
     } else {
       // Thêm sản phẩm mới
-      const newId = Math.max(...currentItems.map(p => p.id), 0) + 1
-      const newProduct = { id: newId, ...formData }
-      setWarehouseData(prev => ({
-        ...prev,
-        [selectedWarehouse]: [...prev[selectedWarehouse], newProduct]
-      }))
-
-      // Cập nhật tồn kho (inventoryData)
-      const savedInventory = JSON.parse(localStorage.getItem('inventoryData') || '{"kho-vat-tu":[],"kho-xay-dung":[],"kho-phong-thi-nghiem":[],"kho-thuong-mai":[]}')
-      const warehouseInventory = savedInventory[selectedWarehouse] || []
-      const existingIdx = warehouseInventory.findIndex((p: Product) => p.code === formData.code)
-      if (existingIdx >= 0) {
-        warehouseInventory[existingIdx] = { ...warehouseInventory[existingIdx], ...formData, quantity: warehouseInventory[existingIdx].quantity + formData.quantity }
-      } else {
-        const invId = Math.max(...warehouseInventory.map((p: Product) => p.id), 0) + 1
-        warehouseInventory.push({ id: invId, ...formData })
-      }
-      savedInventory[selectedWarehouse] = warehouseInventory
-      localStorage.setItem('inventoryData', JSON.stringify(savedInventory))
+      await createProduct({
+        ...formData,
+        productImage: productImageUrl,
+        locationImage: locationImageUrl,
+        warehouseId: selectedWarehouse,
+      })
 
       // Log lịch sử nhập kho
-      const historyLog = JSON.parse(localStorage.getItem('historyLog') || '[]')
-      historyLog.push({
+      await addHistoryEntry({
         date: new Date().toLocaleDateString('vi-VN'),
         time: new Date().toLocaleTimeString('vi-VN'),
         warehouse: currentWarehouse?.name || '',
@@ -305,15 +219,17 @@ export default function WarehousePage() {
         quantity: Number(formData.quantity) || 0,
         details: `Nhập ${formData.quantity} ${formData.unit}, giá ${Number(formData.priceIn).toLocaleString('vi-VN')}đ`,
       })
-      localStorage.setItem('historyLog', JSON.stringify(historyLog))
     }
     setIsModalOpen(false)
+    await loadProducts(selectedWarehouse)
   }
 
-  // Xử lý upload ảnh vị trí
+  // Xử lý upload ảnh vị trí (preview + lưu file)
   const handleLocationImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setLocationImageFile(file)
+      // Preview bằng base64 tạm thời
       const reader = new FileReader()
       reader.onloadend = () => {
         setFormData({ ...formData, locationImage: reader.result as string })
@@ -322,10 +238,11 @@ export default function WarehousePage() {
     }
   }
 
-  // Xử lý upload ảnh sản phẩm
+  // Xử lý upload ảnh sản phẩm (preview + lưu file)
   const handleProductImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setProductImageFile(file)
       const reader = new FileReader()
       reader.onloadend = () => {
         setFormData({ ...formData, productImage: reader.result as string })
@@ -369,7 +286,7 @@ export default function WarehousePage() {
                   <div className="text-left">
                     <p className="font-semibold">{warehouse.name}</p>
                     <p className={`text-sm ${isSelected ? 'opacity-80' : 'opacity-60'}`}>
-                      {warehouseData[warehouse.id]?.length || 0} sản phẩm
+                      {warehouse.id === selectedWarehouse ? products.length : '—'} sản phẩm
                     </p>
                   </div>
                 </button>

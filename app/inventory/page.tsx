@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Archive, Factory, Building, ShoppingBag, FlaskConical, Search, Eye, X, Edit2, Trash2, Save, Upload } from 'lucide-react'
-import { getAccounts, type Product } from '@/lib/constants'
+import { type Product } from '@/lib/constants'
+import { getAllProducts, updateProduct, deleteProduct, addHistoryEntry, uploadImage } from '@/lib/db'
 
 const WAREHOUSES = [
   { id: 'kho-vat-tu', name: 'Kho Vật Tư Nhà Máy', icon: Factory, color: 'blue' },
@@ -19,9 +20,7 @@ export default function InventoryPage() {
   const [user, setUser] = useState<any>(null)
   const [selectedWarehouse, setSelectedWarehouse] = useState('kho-vat-tu')
   const [searchTerm, setSearchTerm] = useState('')
-  const [warehouseData, setWarehouseData] = useState<Record<string, Product[]>>({
-    'kho-vat-tu': [], 'kho-xay-dung': [], 'kho-phong-thi-nghiem': [], 'kho-thuong-mai': []
-  })
+  const [allProducts, setAllProducts] = useState<Record<string, Product[]>>({})
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -29,26 +28,28 @@ export default function InventoryPage() {
   const [editFormData, setEditFormData] = useState({
     code: '', name: '', unit: '', quantity: 0, priceIn: 0, priceOut: 0, weight: 0, location: '', locationImage: '', productImage: '', importDate: ''
   })
+  const [productImageFile, setProductImageFile] = useState<File | null>(null)
+  const [locationImageFile, setLocationImageFile] = useState<File | null>(null)
+
+  const loadAllProducts = async () => {
+    const data = await getAllProducts()
+    setAllProducts(data)
+  }
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
     if (!userData) { window.location.href = '/'; return }
     setUser(JSON.parse(userData))
-    const savedData = localStorage.getItem('warehouseData')
-    if (savedData) setWarehouseData(JSON.parse(savedData))
+    loadAllProducts()
   }, [])
 
-  // Kiểm tra user có quyền "Tồn kho" không (dùng mảng chucNang)
   const canEditInventory = () => {
     if (!user) return false
-    const accounts = getAccounts()
-    const currentAccount = accounts.find((a: any) => a.username === user.username)
-    if (!currentAccount) return false
-    const perms = Array.isArray(currentAccount.chucNang) ? currentAccount.chucNang : [currentAccount.chucNang]
-    return perms.includes('ton-kho') || perms.includes('them-tai-khoan') || currentAccount.isAdmin
+    const perms = Array.isArray(user.chucNang) ? user.chucNang : [user.chucNang || '']
+    return perms.includes('ton-kho') || perms.includes('them-tai-khoan') || user.isAdmin
   }
 
-  const currentItems = warehouseData[selectedWarehouse] || []
+  const currentItems = allProducts[selectedWarehouse] || []
   const filteredItems = currentItems.filter(
     (item) => item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.code.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -64,11 +65,27 @@ export default function InventoryPage() {
       priceIn: product.priceIn, priceOut: product.priceOut, weight: product.weight,
       location: product.location, locationImage: product.locationImage, productImage: product.productImage || '', importDate: product.importDate,
     })
+    setProductImageFile(null)
+    setLocationImageFile(null)
     setIsEditModalOpen(true)
   }
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingProduct) return
+
+    // Upload ảnh mới nếu có
+    let productImageUrl = editFormData.productImage
+    let locationImageUrl = editFormData.locationImage
+
+    if (productImageFile) {
+      const url = await uploadImage(productImageFile, 'products')
+      if (url) productImageUrl = url
+    }
+    if (locationImageFile) {
+      const url = await uploadImage(locationImageFile, 'locations')
+      if (url) locationImageUrl = url
+    }
+
     // Ghi lại chi tiết thay đổi
     const changes: string[] = []
     const old = currentItems.find(p => p.id === editingProduct.id)
@@ -76,25 +93,22 @@ export default function InventoryPage() {
       if (old.weight !== editFormData.weight) changes.push(`Trọng lượng: ${old.weight}kg → ${editFormData.weight}kg`)
       if (old.name !== editFormData.name) changes.push(`Tên: ${old.name} → ${editFormData.name}`)
       if (old.location !== editFormData.location) changes.push(`Vị trí: ${old.location} → ${editFormData.location}`)
-      if (old.locationImage !== editFormData.locationImage) changes.push('Ảnh vị trí: đã cập nhật')
-      if ((old.productImage || '') !== editFormData.productImage) changes.push('Ảnh sản phẩm: đã cập nhật')
+      if (old.locationImage !== locationImageUrl) changes.push('Ảnh vị trí: đã cập nhật')
+      if ((old.productImage || '') !== productImageUrl) changes.push('Ảnh sản phẩm: đã cập nhật')
       if (old.priceIn !== editFormData.priceIn) changes.push(`Giá nhập: ${old.priceIn.toLocaleString()} → ${editFormData.priceIn.toLocaleString()}`)
       if (old.priceOut !== editFormData.priceOut) changes.push(`Giá xuất: ${old.priceOut.toLocaleString()} → ${editFormData.priceOut.toLocaleString()}`)
     }
 
-    // Giữ nguyên số lượng cũ (không cho sửa)
-    const updatedData = {
-      ...warehouseData,
-      [selectedWarehouse]: warehouseData[selectedWarehouse].map(p =>
-        p.id === editingProduct.id ? { ...p, ...editFormData, quantity: p.quantity } : p
-      )
-    }
-    setWarehouseData(updatedData)
-    localStorage.setItem('warehouseData', JSON.stringify(updatedData))
+    // Cập nhật DB (giữ nguyên quantity)
+    await updateProduct(editingProduct.id, {
+      ...editFormData,
+      productImage: productImageUrl,
+      locationImage: locationImageUrl,
+      quantity: editingProduct.quantity, // Giữ nguyên số lượng
+    })
 
     // Log lịch sử
-    const historyLog = JSON.parse(localStorage.getItem('historyLog') || '[]')
-    historyLog.push({
+    await addHistoryEntry({
       date: new Date().toLocaleDateString('vi-VN'),
       time: new Date().toLocaleTimeString('vi-VN'),
       warehouse: currentWarehouse?.name || '',
@@ -105,24 +119,22 @@ export default function InventoryPage() {
       quantity: editFormData.quantity,
       details: changes.length > 0 ? changes.join(', ') : 'Không có thay đổi',
     })
-    localStorage.setItem('historyLog', JSON.stringify(historyLog))
+
+    await loadAllProducts()
     setIsEditModalOpen(false)
   }
 
-  const handleDelete = (productId: number) => {
+  const handleDelete = async (productId: number) => {
     if (confirm('Bạn có chắc chắn muốn xóa sản phẩm khỏi tồn kho?')) {
-      const updatedData = {
-        ...warehouseData,
-        [selectedWarehouse]: warehouseData[selectedWarehouse].filter(p => p.id !== productId)
-      }
-      setWarehouseData(updatedData)
-      localStorage.setItem('warehouseData', JSON.stringify(updatedData))
+      await deleteProduct(productId)
+      await loadAllProducts()
     }
   }
 
   const handleProductImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setProductImageFile(file)
       const reader = new FileReader()
       reader.onloadend = () => setEditFormData({ ...editFormData, productImage: reader.result as string })
       reader.readAsDataURL(file)
@@ -132,6 +144,7 @@ export default function InventoryPage() {
   const handleLocationImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setLocationImageFile(file)
       const reader = new FileReader()
       reader.onloadend = () => setEditFormData({ ...editFormData, locationImage: reader.result as string })
       reader.readAsDataURL(file)
@@ -163,7 +176,7 @@ export default function InventoryPage() {
                   <Icon className="w-8 h-8" />
                   <div className="text-left">
                     <p className="font-semibold">{warehouse.name}</p>
-                    <p className={`text-sm ${isSelected ? 'opacity-80' : 'opacity-60'}`}>{warehouseData[warehouse.id]?.length || 0} sản phẩm</p>
+                    <p className={`text-sm ${isSelected ? 'opacity-80' : 'opacity-60'}`}>{allProducts[warehouse.id]?.length || 0} sản phẩm</p>
                   </div>
                 </button>
               )

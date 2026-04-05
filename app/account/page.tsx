@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { UserCog, Plus, Edit2, Trash2, Search, X, Save, Shield, Check, AlertCircle } from 'lucide-react'
-import { CHUC_NANG_LIST, DEFAULT_ACCOUNTS, getAccounts, getChucNangName, type Account } from '@/lib/constants'
+import { CHUC_NANG_LIST, getChucNangName, type Account } from '@/lib/constants'
+import { getAccountsFromDB, createAccount, updateAccount, deleteAccountFromDB } from '@/lib/db'
 
 export default function AccountPage() {
   const [user, setUser] = useState<any>(null)
@@ -23,18 +24,18 @@ export default function AccountPage() {
     status: 'active' as 'active' | 'inactive',
   })
 
+  // Load tài khoản từ Supabase
+  const loadAccounts = async () => {
+    const data = await getAccountsFromDB()
+    setAccounts(data)
+  }
+
   useEffect(() => {
     const userData = localStorage.getItem('user')
     if (!userData) { window.location.href = '/'; return }
     setUser(JSON.parse(userData))
-    setAccounts(getAccounts())
+    loadAccounts()
   }, [])
-
-  useEffect(() => {
-    if (accounts.length > 0) {
-      localStorage.setItem('accounts', JSON.stringify(accounts))
-    }
-  }, [accounts])
 
   const filteredAccounts = accounts.filter(
     (acc) => acc.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -69,27 +70,28 @@ export default function AccountPage() {
     setIsModalOpen(true)
   }
 
-  const handleDelete = (accountId: number) => {
+  const handleDelete = async (accountId: number) => {
     const acc = accounts.find(a => a.id === accountId)
     if (acc?.isAdmin) { alert('Không thể xóa tài khoản Admin!'); return }
     if (confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) {
-      setAccounts(prev => prev.filter(a => a.id !== accountId))
+      await deleteAccountFromDB(accountId)
+      await loadAccounts()
     }
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.username || !formData.password || !formData.name) {
       alert('Vui lòng điền đầy đủ thông tin!'); return
     }
     if (editingAccount) {
-      setAccounts(prev => prev.map(a => a.id === editingAccount.id ? { ...a, ...formData } : a))
+      await updateAccount(editingAccount.id, formData)
     } else {
       if (accounts.some(a => a.username === formData.username)) {
         alert('Tên đăng nhập đã tồn tại!'); return
       }
-      const newId = Math.max(...accounts.map(a => a.id), 0) + 1
-      setAccounts(prev => [...prev, { id: newId, ...formData, createdAt: new Date().toISOString().split('T')[0] }])
+      await createAccount({ ...formData, createdAt: new Date().toISOString().split('T')[0] })
     }
+    await loadAccounts()
     setIsModalOpen(false)
   }
 

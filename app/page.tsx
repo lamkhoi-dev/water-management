@@ -26,7 +26,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { getAccounts } from '@/lib/constants'
+import { getAccountByCredentials } from '@/lib/db'
 
 // ------------------------------------------
 // COMPONENT: Widget Thời Tiết
@@ -113,32 +113,34 @@ export default function LoginPage() {
   const [signInPassword, setSignInPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   // ------------------------------------------
   // XỬ LÝ ĐĂNG NHẬP
-  // 1. Lấy danh sách tài khoản từ localStorage
-  // 2. Kiểm tra username + password
-  // 3. Nếu đúng → lưu user vào localStorage → chuyển trang
-  // 4. Nếu sai → hiển thị lỗi
+  // 1. Gọi Supabase tìm tài khoản theo username + password
+  // 2. Nếu đúng → lưu session vào localStorage → chuyển trang
+  // 3. Nếu sai → hiển thị lỗi
   // ------------------------------------------
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
 
-    // Lấy danh sách tài khoản (từ localStorage hoặc mặc định)
-    const accounts = getAccounts()
+    try {
+      // Tìm tài khoản khớp username + password từ Supabase
+      const account = await getAccountByCredentials(signInUsername, signInPassword)
 
-    // Tìm tài khoản khớp username + password
-    const account = accounts.find(
-      (acc: any) => acc.username === signInUsername && acc.password === signInPassword
-    )
-
-    if (account) {
-      // Đăng nhập thành công: lưu thông tin user
-      localStorage.setItem('user', JSON.stringify(account))
-      window.location.href = '/dashboard'
-    } else {
-      setError('Tên đăng nhập hoặc mật khẩu không đúng!')
+      if (account) {
+        // Đăng nhập thành công: lưu session
+        localStorage.setItem('user', JSON.stringify(account))
+        window.location.href = '/dashboard'
+      } else {
+        setError('Tên đăng nhập hoặc mật khẩu không đúng!')
+      }
+    } catch {
+      setError('Lỗi kết nối. Vui lòng thử lại!')
+    } finally {
+      setLoading(false)
     }
   }
 
