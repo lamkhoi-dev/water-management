@@ -33,9 +33,17 @@ export default function AccountPage() {
   useEffect(() => {
     const userData = localStorage.getItem('user')
     if (!userData) { window.location.href = '/'; return }
-    setUser(JSON.parse(userData))
+    const parsed = JSON.parse(userData)
+    setUser(parsed)
     loadAccounts()
   }, [])
+
+  const canManageAccounts = () => {
+    if (!user) return false
+    const perms = Array.isArray(user.chucNang) ? user.chucNang : [user.chucNang || '']
+    return perms.includes('them-tai-khoan') || user.isAdmin
+  }
+  const hasAccountPermission = canManageAccounts()
 
   const filteredAccounts = accounts.filter(
     (acc) => acc.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -121,9 +129,9 @@ export default function AccountPage() {
                 <CardTitle className="flex items-center gap-2 text-blue-600">
                   <UserCog className="w-5 h-5" /> Danh Sách Tài Khoản
                 </CardTitle>
-                <Button onClick={handleAdd} className="bg-blue-600 text-white hover:bg-blue-700">
+                {hasAccountPermission && <Button onClick={handleAdd} className="bg-blue-600 text-white hover:bg-blue-700">
                   <Plus className="h-4 w-4 mr-2" /> Thêm Tài Khoản
-                </Button>
+                </Button>}
               </div>
             </CardHeader>
             <CardContent className="p-6">
@@ -167,12 +175,14 @@ export default function AccountPage() {
                           </span>
                         </td>
                         <td className="py-3 px-4">
-                          <div className="flex items-center justify-center gap-1">
-                            <Button variant="ghost" size="sm" onClick={() => handleEdit(account)} className="h-8 w-8 p-0 hover:bg-blue-100 text-blue-600"><Edit2 className="h-4 w-4" /></Button>
-                            {!account.isAdmin && (
-                              <Button variant="ghost" size="sm" onClick={() => handleDelete(account.id)} className="h-8 w-8 p-0 hover:bg-red-100 text-red-600"><Trash2 className="h-4 w-4" /></Button>
-                            )}
-                          </div>
+                          {hasAccountPermission && (
+                            <div className="flex items-center justify-center gap-1">
+                              <Button variant="ghost" size="sm" onClick={() => handleEdit(account)} className="h-8 w-8 p-0 hover:bg-blue-100 text-blue-600"><Edit2 className="h-4 w-4" /></Button>
+                              {!account.isAdmin && (
+                                <Button variant="ghost" size="sm" onClick={() => handleDelete(account.id)} className="h-8 w-8 p-0 hover:bg-red-100 text-red-600"><Trash2 className="h-4 w-4" /></Button>
+                              )}
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}

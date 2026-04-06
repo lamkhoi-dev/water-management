@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Sidebar } from '@/components/sidebar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { User, Briefcase, GraduationCap, Calendar, MapPin, CreditCard, Clock } from 'lucide-react'
+import { User, Briefcase, GraduationCap, Calendar, MapPin, CreditCard, Clock, Phone } from 'lucide-react'
 import { type Employee } from '@/lib/constants'
 import { getEmployeeByUsername } from '@/lib/db'
 
@@ -70,6 +70,7 @@ export default function DashboardPage() {
                     ['Họ và tên', employee.hoTen],
                     ['Ngày sinh', employee.ngaySinh ? `${new Date(employee.ngaySinh).toLocaleDateString('vi-VN')} (${calcAge(employee.ngaySinh)} tuổi)` : '—'],
                     ['Giới tính', employee.gioiTinh],
+                    ['Số điện thoại', employee.soDienThoai || '—'],
                     ['CCCD', employee.cccd],
                     ['Ngày cấp', employee.ngayCapCCCD ? new Date(employee.ngayCapCCCD).toLocaleDateString('vi-VN') : '—'],
                     ['Nơi cấp', employee.noiCapCCCD],

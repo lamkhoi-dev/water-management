@@ -45,7 +45,7 @@ export default function HRPage() {
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null)
   const [formData, setFormData] = useState<Employee>({
-    id: 0, hoTen: '', ngaySinh: '', gioiTinh: 'Nam', cccd: '', ngayCapCCCD: '', noiCapCCCD: '',
+    id: 0, hoTen: '', ngaySinh: '', gioiTinh: 'Nam', cccd: '', ngayCapCCCD: '', noiCapCCCD: '', soDienThoai: '',
     ngayThuViec: '', ngayChinhThuc: '', ngayHetHD: '', loaiHD: 'Chính thức', trinhDo: 'Đại học',
     chuyenNganh: '', truongDaoTao: '', namTotNghiep: '', diaChi: '', username: '',
   })
@@ -75,7 +75,7 @@ export default function HRPage() {
 
   const handleAdd = () => {
     setEditingEmployee(null)
-    setFormData({ id: 0, hoTen: '', ngaySinh: '', gioiTinh: 'Nam', cccd: '', ngayCapCCCD: '', noiCapCCCD: '', ngayThuViec: '', ngayChinhThuc: '', ngayHetHD: '', loaiHD: 'Chính thức', trinhDo: 'Đại học', chuyenNganh: '', truongDaoTao: '', namTotNghiep: '', diaChi: '', username: '' })
+    setFormData({ id: 0, hoTen: '', ngaySinh: '', gioiTinh: 'Nam', cccd: '', ngayCapCCCD: '', noiCapCCCD: '', soDienThoai: '', ngayThuViec: '', ngayChinhThuc: '', ngayHetHD: '', loaiHD: 'Chính thức', trinhDo: 'Đại học', chuyenNganh: '', truongDaoTao: '', namTotNghiep: '', diaChi: '', username: '' })
     setIsModalOpen(true)
   }
 
@@ -174,7 +174,9 @@ export default function HRPage() {
                           {isExpiringSoon(emp.ngayHetHD) && <span className="ml-1 text-xs text-amber-600 font-bold">⏰ SẮP HẾT</span>}
                         </td>
                         <td className="py-3 px-3 text-center">{calcAge(emp.ngaySinh)}</td>
-                        <td className="py-3 px-3 text-center"><Button variant="ghost" size="sm" onClick={() => handleView(emp)} className="hover:bg-blue-100 text-blue-600"><Eye className="w-4 h-4 mr-1" />Xem</Button></td>
+                        <td className="py-3 px-3 text-center">
+                          {hasPermission && <Button variant="ghost" size="sm" onClick={() => handleView(emp)} className="hover:bg-blue-100 text-blue-600"><Eye className="w-4 h-4 mr-1" />Xem</Button>}
+                        </td>
                         {hasPermission && (
                           <td className="py-3 px-3 text-center">
                             <div className="flex items-center justify-center gap-1">
@@ -208,6 +210,7 @@ export default function HRPage() {
                     ['Ngày sinh', selectedEmployee.ngaySinh ? new Date(selectedEmployee.ngaySinh).toLocaleDateString('vi-VN') : '—'],
                     ['Tuổi', `${calcAge(selectedEmployee.ngaySinh)} tuổi`],
                     ['Giới tính', selectedEmployee.gioiTinh],
+                    ['Số điện thoại', selectedEmployee.soDienThoai || '—'],
                     ['CCCD', selectedEmployee.cccd],
                     ['Ngày cấp CCCD', selectedEmployee.ngayCapCCCD ? new Date(selectedEmployee.ngayCapCCCD).toLocaleDateString('vi-VN') : '—'],
                     ['Nơi cấp CCCD', selectedEmployee.noiCapCCCD],
@@ -245,6 +248,7 @@ export default function HRPage() {
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Số CCCD *</label><Input value={formData.cccd} onChange={e => setFormData({...formData, cccd: e.target.value})} className="border-2" /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Ngày cấp CCCD</label><Input type="date" value={formData.ngayCapCCCD} onChange={e => setFormData({...formData, ngayCapCCCD: e.target.value})} className="border-2" /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Nơi cấp CCCD</label><Input value={formData.noiCapCCCD} onChange={e => setFormData({...formData, noiCapCCCD: e.target.value})} className="border-2" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label><Input type="tel" value={formData.soDienThoai || ''} onChange={e => setFormData({...formData, soDienThoai: e.target.value})} className="border-2" /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Ngày thử việc</label><Input type="date" value={formData.ngayThuViec} onChange={e => setFormData({...formData, ngayThuViec: e.target.value})} className="border-2" /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Ngày chính thức</label><Input type="date" value={formData.ngayChinhThuc} onChange={e => setFormData({...formData, ngayChinhThuc: e.target.value})} className="border-2" /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Ngày hết hạn HĐ</label><Input type="date" value={formData.ngayHetHD} onChange={e => setFormData({...formData, ngayHetHD: e.target.value})} className="border-2" /></div>

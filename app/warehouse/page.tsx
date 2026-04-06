@@ -311,14 +311,18 @@ export default function WarehousePage() {
                   {currentWarehouse?.name}
                 </CardTitle>
                 <div className="flex gap-2">
-                  <Button onClick={handleImport} className="bg-green-600 text-white hover:bg-green-700">
-                    <LogIn className="h-4 w-4 mr-2" />
-                    Nhập Kho
-                  </Button>
-                  <Button onClick={handleExport} className="bg-orange-500 text-white hover:bg-orange-600">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Xuất Kho
-                  </Button>
+                  {(user?.isAdmin || (Array.isArray(user?.chucNang) ? user.chucNang : []).includes('nhap-kho')) && (
+                    <Button onClick={handleImport} className="bg-green-600 text-white hover:bg-green-700">
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Nhập Kho
+                    </Button>
+                  )}
+                  {(user?.isAdmin || (Array.isArray(user?.chucNang) ? user.chucNang : []).includes('xuat-kho')) && (
+                    <Button onClick={handleExport} className="bg-orange-500 text-white hover:bg-orange-600">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Xuất Kho
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardHeader>
@@ -501,10 +505,10 @@ export default function WarehousePage() {
                                   Số lượng xuất * (Tồn: {foundProduct.quantity} {foundProduct.unit})
                                 </label>
                                 <Input
-                                  type="number"
-                                  value={exportQuantity}
-                                  onChange={(e) => setExportQuantity(Number(e.target.value))}
-                                  placeholder="0"
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={exportQuantity || ''}
+                                  onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setExportQuantity(v ? parseInt(v) : 0) }}
                                   className="border-2 text-lg"
                                   max={foundProduct.quantity}
                                 />
@@ -513,10 +517,10 @@ export default function WarehousePage() {
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Giá xuất (VNĐ)</label>
                                 <Input
-                                  type="number"
-                                  value={exportPrice}
-                                  onChange={(e) => setExportPrice(Number(e.target.value))}
-                                  placeholder="0"
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={exportPrice ? exportPrice.toLocaleString('vi-VN') : ''}
+                                  onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setExportPrice(v ? parseInt(v) : 0) }}
                                   className="border-2 text-lg"
                                 />
                               </div>
@@ -554,7 +558,6 @@ export default function WarehousePage() {
                       <Input
                         value={formData.code}
                         onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                        placeholder="VD: VT001"
                         className="border-2"
                       />
                     </div>
@@ -564,7 +567,6 @@ export default function WarehousePage() {
                       <Input
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Nhập tên hàng"
                         className="border-2"
                       />
                     </div>
@@ -574,7 +576,6 @@ export default function WarehousePage() {
                       <Input
                         value={formData.unit}
                         onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                        placeholder="cái, bộ, kg, m³..."
                         className="border-2"
                       />
                     </div>
@@ -582,10 +583,10 @@ export default function WarehousePage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
                       <Input
-                        type="number"
-                        value={formData.quantity}
-                        onChange={(e) => setFormData({ ...formData, quantity: Number(e.target.value) })}
-                        placeholder="0"
+                        type="text"
+                        inputMode="numeric"
+                        value={formData.quantity || ''}
+                        onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setFormData({ ...formData, quantity: v ? parseInt(v) : '' as any }) }}
                         className="border-2"
                       />
                     </div>
@@ -593,10 +594,10 @@ export default function WarehousePage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Giá nhập (VNĐ)</label>
                       <Input
-                        type="number"
-                        value={formData.priceIn}
-                        onChange={(e) => setFormData({ ...formData, priceIn: Number(e.target.value) })}
-                        placeholder="0"
+                        type="text"
+                        inputMode="numeric"
+                        value={formData.priceIn ? Number(formData.priceIn).toLocaleString('vi-VN') : ''}
+                        onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setFormData({ ...formData, priceIn: v ? parseInt(v) : '' as any }) }}
                         className="border-2"
                       />
                     </div>
@@ -604,10 +605,10 @@ export default function WarehousePage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Giá xuất (VNĐ)</label>
                       <Input
-                        type="number"
-                        value={formData.priceOut}
-                        onChange={(e) => setFormData({ ...formData, priceOut: Number(e.target.value) })}
-                        placeholder="0"
+                        type="text"
+                        inputMode="numeric"
+                        value={formData.priceOut ? Number(formData.priceOut).toLocaleString('vi-VN') : ''}
+                        onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setFormData({ ...formData, priceOut: v ? parseInt(v) : '' as any }) }}
                         className="border-2"
                       />
                     </div>
@@ -615,11 +616,10 @@ export default function WarehousePage() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Trọng lượng (kg)</label>
                       <Input
-                        type="number"
-                        step="0.1"
-                        value={formData.weight}
-                        onChange={(e) => setFormData({ ...formData, weight: Number(e.target.value) })}
-                        placeholder="0"
+                        type="text"
+                        inputMode="decimal"
+                        value={formData.weight || ''}
+                        onChange={(e) => { const v = e.target.value.replace(/[^0-9.]/g, ''); setFormData({ ...formData, weight: v ? parseFloat(v) : '' as any }) }}
                         className="border-2"
                       />
                     </div>
@@ -629,7 +629,6 @@ export default function WarehousePage() {
                       <Input
                         value={formData.location}
                         onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                        placeholder="VD: Kệ A1, Khu B..."
                         className="border-2"
                       />
                     </div>

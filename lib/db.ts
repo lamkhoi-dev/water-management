@@ -255,6 +255,7 @@ export async function updateEmployee(id: number, emp: Partial<Employee>): Promis
   if (emp.cccd !== undefined) dbUpdates.cccd = emp.cccd
   if (emp.ngayCapCCCD !== undefined) dbUpdates.ngay_cap_cccd = emp.ngayCapCCCD
   if (emp.noiCapCCCD !== undefined) dbUpdates.noi_cap_cccd = emp.noiCapCCCD
+  if (emp.soDienThoai !== undefined) dbUpdates.so_dien_thoai = emp.soDienThoai
   if (emp.ngayThuViec !== undefined) dbUpdates.ngay_thu_viec = emp.ngayThuViec
   if (emp.ngayChinhThuc !== undefined) dbUpdates.ngay_chinh_thuc = emp.ngayChinhThuc
   if (emp.ngayHetHD !== undefined) dbUpdates.ngay_het_hd = emp.ngayHetHD
@@ -387,6 +388,7 @@ function mapEmployeeFromDB(row: any): Employee {
     cccd: row.cccd || '',
     ngayCapCCCD: row.ngay_cap_cccd || '',
     noiCapCCCD: row.noi_cap_cccd || '',
+    soDienThoai: row.so_dien_thoai || '',
     ngayThuViec: row.ngay_thu_viec || '',
     ngayChinhThuc: row.ngay_chinh_thuc || '',
     ngayHetHD: row.ngay_het_hd || '',
@@ -408,6 +410,7 @@ function mapEmployeeToDB(emp: any): any {
     cccd: emp.cccd || null,
     ngay_cap_cccd: emp.ngayCapCCCD || null,
     noi_cap_cccd: emp.noiCapCCCD || null,
+    so_dien_thoai: emp.soDienThoai || null,
     ngay_thu_viec: emp.ngayThuViec || null,
     ngay_chinh_thuc: emp.ngayChinhThuc || null,
     ngay_het_hd: emp.ngayHetHD || null,

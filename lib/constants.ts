@@ -92,6 +92,7 @@ export interface Employee {
   cccd: string
   ngayCapCCCD: string
   noiCapCCCD: string
+  soDienThoai?: string
   ngayThuViec: string
   ngayChinhThuc: string
   ngayHetHD: string

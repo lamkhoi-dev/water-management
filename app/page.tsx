@@ -197,8 +197,8 @@ export default function LoginPage() {
         {/* Chữ đẩy lên cao để tránh bị sóng che   */}
         {/* ====================================== */}
         <div
-          className="md:order-2 md:w-1/2 w-full flex flex-col items-center justify-center px-8 text-center z-[3] py-8 md:py-0"
-          style={{ paddingBottom: '120px' }}
+          className="md:order-2 md:w-1/2 w-full flex flex-col items-center justify-start px-8 text-center z-[3] py-8 md:py-0 md:pt-12"
+          style={{ paddingBottom: '260px' }}
         >
           {/* Logo công ty - phóng to theo yêu cầu */}
           <div className="mb-6 md:mb-12">
