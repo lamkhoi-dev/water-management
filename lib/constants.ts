@@ -46,6 +46,7 @@ export interface Account {
   status: 'active' | 'inactive'
   createdAt: string
   isAdmin?: boolean     // Đánh dấu tài khoản admin (không thể xóa)
+  ghiChu?: string       // Ghi chú thêm về tài khoản/nhân viên
 }
 
 // ------------------------------------------
@@ -60,6 +61,7 @@ export interface Product {
   priceIn: number
   priceOut: number
   weight: number
+  weightUnit?: string     // Đơn vị trọng lượng (kg, g, lít, ml, chai...)
   location: string
   locationImage: string   // URL ảnh vị trí (Supabase Storage)
   productImage: string    // URL ảnh sản phẩm (Supabase Storage)

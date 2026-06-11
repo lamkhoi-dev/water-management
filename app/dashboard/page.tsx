@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Sidebar } from '@/components/sidebar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { User, Briefcase, GraduationCap, Calendar, MapPin, CreditCard, Clock, Phone } from 'lucide-react'
+import { User, Briefcase, GraduationCap, Calendar, MapPin, CreditCard, Clock, Phone, FileText } from 'lucide-react'
 import { type Employee } from '@/lib/constants'
 import { getEmployeeByUsername } from '@/lib/db'
 
@@ -121,6 +121,22 @@ export default function DashboardPage() {
                 <User className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <p className="text-lg font-medium">Chưa có hồ sơ nhân sự</p>
                 <p className="text-sm">Liên hệ bộ phận Quản lý nhân sự để cập nhật thông tin cá nhân.</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* ===== Card Ghi Chú từ tài khoản ===== */}
+          {user?.ghiChu && (
+            <Card className="mt-6 border-l-4 border-l-amber-400">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-amber-600">
+                  <FileText className="w-5 h-5" /> Ghi Chú
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 min-h-[80px]">
+                  <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{user.ghiChu}</p>
+                </div>
               </CardContent>
             </Card>
           )}

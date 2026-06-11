@@ -26,10 +26,11 @@ export default function InventoryPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [editFormData, setEditFormData] = useState({
-    code: '', name: '', unit: '', quantity: 0, priceIn: 0, priceOut: 0, weight: 0, location: '', locationImage: '', productImage: '', importDate: ''
+    code: '', name: '', unit: '', quantity: 0, priceIn: 0, priceOut: 0, weight: 0, weightUnit: 'kg', location: '', locationImage: '', productImage: '', importDate: ''
   })
   const [productImageFile, setProductImageFile] = useState<File | null>(null)
   const [locationImageFile, setLocationImageFile] = useState<File | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
 
   const loadAllProducts = async () => {
     const data = await getAllProducts()
@@ -63,6 +64,7 @@ export default function InventoryPage() {
     setEditFormData({
       code: product.code, name: product.name, unit: product.unit, quantity: product.quantity,
       priceIn: product.priceIn, priceOut: product.priceOut, weight: product.weight,
+      weightUnit: product.weightUnit || 'kg',
       location: product.location, locationImage: product.locationImage, productImage: product.productImage || '', importDate: product.importDate,
     })
     setProductImageFile(null)
@@ -72,6 +74,7 @@ export default function InventoryPage() {
 
   const handleSaveEdit = async () => {
     if (!editingProduct) return
+    setIsSaving(true)
 
     // Upload ảnh mới nếu có
     let productImageUrl = editFormData.productImage
@@ -90,7 +93,7 @@ export default function InventoryPage() {
     const changes: string[] = []
     const old = currentItems.find(p => p.id === editingProduct.id)
     if (old) {
-      if (old.weight !== editFormData.weight) changes.push(`Trọng lượng: ${old.weight}kg → ${editFormData.weight}kg`)
+      if (old.weight !== editFormData.weight || (old.weightUnit || 'kg') !== editFormData.weightUnit) changes.push(`Khối lượng: ${old.weight}${old.weightUnit || 'kg'} → ${editFormData.weight}${editFormData.weightUnit}`)
       if (old.name !== editFormData.name) changes.push(`Tên: ${old.name} → ${editFormData.name}`)
       if (old.location !== editFormData.location) changes.push(`Vị trí: ${old.location} → ${editFormData.location}`)
       if (old.locationImage !== locationImageUrl) changes.push('Ảnh vị trí: đã cập nhật')
@@ -100,12 +103,18 @@ export default function InventoryPage() {
     }
 
     // Cập nhật DB (giữ nguyên quantity)
-    await updateProduct(editingProduct.id, {
+    const ok = await updateProduct(editingProduct.id, {
       ...editFormData,
       productImage: productImageUrl,
       locationImage: locationImageUrl,
       quantity: editingProduct.quantity, // Giữ nguyên số lượng
     })
+
+    if (!ok) {
+      alert('❌ Cập nhật thất bại! Vui lòng thử lại.')
+      setIsSaving(false)
+      return
+    }
 
     // Log lịch sử
     await addHistoryEntry({
@@ -120,8 +129,10 @@ export default function InventoryPage() {
       details: changes.length > 0 ? changes.join(', ') : 'Không có thay đổi',
     })
 
+    setIsSaving(false)
     await loadAllProducts()
     setIsEditModalOpen(false)
+    alert('✅ Cập nhật sản phẩm thành công!')
   }
 
   const handleDelete = async (productId: number) => {
@@ -184,9 +195,17 @@ export default function InventoryPage() {
           </div>
 
           {/* Product Table - Cấu trúc mới: STT, Mã hàng, Tên hàng, Số lượng, Thông tin, Thao tác, Xóa */}
-          <Card className="border-l-4 border-l-blue-600">
+          <Card className={`border-l-4 ${
+            currentWarehouse?.color === 'blue' ? 'border-l-blue-600' :
+            currentWarehouse?.color === 'orange' ? 'border-l-orange-500' :
+            currentWarehouse?.color === 'purple' ? 'border-l-purple-600' : 'border-l-green-600'
+          }`}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-blue-600">
+              <CardTitle className={`flex items-center gap-2 ${
+                currentWarehouse?.color === 'blue' ? 'text-blue-600' :
+                currentWarehouse?.color === 'orange' ? 'text-orange-500' :
+                currentWarehouse?.color === 'purple' ? 'text-purple-600' : 'text-green-600'
+              }`}>
                 <Archive className="w-5 h-5" /> {currentWarehouse?.name} - Tồn Kho
               </CardTitle>
             </CardHeader>
@@ -300,7 +319,13 @@ export default function InventoryPage() {
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Số lượng (không thể sửa)</label><Input type="number" value={editFormData.quantity} className="border-2 bg-gray-100 cursor-not-allowed" disabled /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Giá nhập (VNĐ)</label><Input type="number" value={editFormData.priceIn} onChange={(e) => setEditFormData({...editFormData, priceIn: Number(e.target.value)})} className="border-2" /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Giá xuất (VNĐ)</label><Input type="number" value={editFormData.priceOut} onChange={(e) => setEditFormData({...editFormData, priceOut: Number(e.target.value)})} className="border-2" /></div>
-                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Trọng lượng (kg)</label><Input type="number" step="0.1" value={editFormData.weight} onChange={(e) => setEditFormData({...editFormData, weight: Number(e.target.value)})} className="border-2" /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">Khối lượng</label>
+                    <div className="flex gap-2">
+                      <Input type="number" step="0.1" value={editFormData.weight} onChange={(e) => setEditFormData({...editFormData, weight: Number(e.target.value)})} className="border-2 flex-1" />
+                      <Input type="text" value={editFormData.weightUnit} onChange={(e) => setEditFormData({...editFormData, weightUnit: e.target.value})} className="border-2 w-24" placeholder="Đơn vị" />
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">VD: kg, g, lít, ml, chai...</p>
+                  </div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Vị trí</label><Input value={editFormData.location} onChange={(e) => setEditFormData({...editFormData, location: e.target.value})} className="border-2" /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Ngày nhập kho</label><Input type="date" value={editFormData.importDate} onChange={(e) => setEditFormData({...editFormData, importDate: e.target.value})} className="border-2" /></div>
                   <div>
@@ -336,7 +361,9 @@ export default function InventoryPage() {
                 </div>
                 <div className="flex gap-3 mt-6">
                   <Button variant="outline" onClick={() => setIsEditModalOpen(false)} className="flex-1">Hủy</Button>
-                  <Button onClick={handleSaveEdit} className="flex-1 bg-blue-600 hover:bg-blue-700"><Save className="w-4 h-4 mr-2" /> Cập Nhật</Button>
+                  <Button onClick={handleSaveEdit} className="flex-1 bg-blue-600 hover:bg-blue-700" disabled={isSaving}>
+                    <Save className="w-4 h-4 mr-2" /> {isSaving ? 'Đang cập nhật...' : 'Cập Nhật'}
+                  </Button>
                 </div>
               </div>
             </div>

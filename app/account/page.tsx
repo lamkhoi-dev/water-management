@@ -22,6 +22,7 @@ export default function AccountPage() {
     chucVu: '',
     chucNang: ['xem-co-ban'] as string[],
     status: 'active' as 'active' | 'inactive',
+    ghiChu: '',
   })
 
   // Load tài khoản từ Supabase
@@ -61,7 +62,7 @@ export default function AccountPage() {
 
   const handleAdd = () => {
     setEditingAccount(null)
-    setFormData({ username: '', password: '', name: '', chucVu: '', chucNang: ['xem-co-ban'], status: 'active' })
+    setFormData({ username: '', password: '', name: '', chucVu: '', chucNang: ['xem-co-ban'], status: 'active', ghiChu: '' })
     setIsModalOpen(true)
   }
 
@@ -74,6 +75,7 @@ export default function AccountPage() {
       chucVu: account.chucVu,
       chucNang: Array.isArray(account.chucNang) ? account.chucNang : [account.chucNang || 'xem-co-ban'],
       status: account.status,
+      ghiChu: account.ghiChu || '',
     })
     setIsModalOpen(true)
   }
@@ -260,6 +262,19 @@ export default function AccountPage() {
                       <option value="active">Hoạt động</option>
                       <option value="inactive">Tạm khóa</option>
                     </select>
+                  </div>
+
+                  {/* Ô ghi chú - cho phép nhập nhiều dòng */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
+                    <textarea
+                      value={formData.ghiChu}
+                      onChange={(e) => setFormData({ ...formData, ghiChu: e.target.value })}
+                      rows={4}
+                      placeholder="Nhập ghi chú về tài khoản/nhân viên này..."
+                      className="w-full p-3 border-2 border-gray-200 rounded-lg text-sm resize-y focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Ghi chú sẽ hiển thị trong trang Thông Tin Nhân Viên của tài khoản này.</p>
                   </div>
                 </div>
                 <div className="flex gap-3 mt-6">

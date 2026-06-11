@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { Sidebar } from '@/components/sidebar'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Package, Plus, Edit2, Trash2, Search, X, Save, Warehouse, Factory, ShoppingBag, Building, Upload, LogIn, LogOut, FlaskConical } from 'lucide-react'
+import { Package, Plus, Edit2, Trash2, Search, X, Save, Warehouse, Factory, ShoppingBag, Building, Upload, LogIn, LogOut, FlaskConical, RefreshCw } from 'lucide-react'
 import { type Product } from '@/lib/constants'
 import { getProductsByWarehouse, createProduct, updateProduct, deleteProduct, addHistoryEntry, uploadImage } from '@/lib/db'
 
@@ -23,12 +23,17 @@ export default function WarehousePage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [modalType, setModalType] = useState<'import' | 'export'>('import')
+  // modalType: 'import' = nhập kho mới, 'export' = xuất kho, 'addmore' = nhập thêm số lượng
+  const [modalType, setModalType] = useState<'import' | 'export' | 'addmore'>('import')
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [exportCodeInput, setExportCodeInput] = useState('')
   const [foundProduct, setFoundProduct] = useState<Product | null>(null)
   const [exportQuantity, setExportQuantity] = useState(0)
   const [exportPrice, setExportPrice] = useState(0)
+  // isSaving: chặn bấm nút nhiều lần
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Trạng thái form nhập kho mới
   const [formData, setFormData] = useState({
     code: '',
     name: '',
@@ -37,14 +42,29 @@ export default function WarehousePage() {
     priceIn: '' as any,
     priceOut: '' as any,
     weight: '' as any,
+    weightUnit: 'kg',
     location: '',
     locationImage: '',
     productImage: '',
     importDate: new Date().toISOString().split('T')[0],
   })
-  // File refs cho upload ảnh (thay vì base64)
+
+  // Trạng thái nhập thêm số lượng
+  const [addMoreCodeInput, setAddMoreCodeInput] = useState('')
+  const [addMoreProduct, setAddMoreProduct] = useState<Product | null>(null)
+  const [addMoreQuantity, setAddMoreQuantity] = useState(0)
+
+  // File refs cho upload ảnh
   const [productImageFile, setProductImageFile] = useState<File | null>(null)
   const [locationImageFile, setLocationImageFile] = useState<File | null>(null)
+
+  // ------------------------------------------
+  // Kiểm tra trùng mã hàng trong kho hiện tại
+  // Chỉ kiểm tra khi THÊM MỚI, không kiểm tra khi sửa
+  // ------------------------------------------
+  const isDuplicateCode = !editingProduct && !!formData.code && products.some(
+    (p) => p.code.toLowerCase() === formData.code.toLowerCase()
+  )
 
   // Load products từ Supabase khi chọn kho
   const loadProducts = async (warehouseId: string) => {
@@ -74,17 +94,21 @@ export default function WarehousePage() {
 
   const currentWarehouse = WAREHOUSES.find(w => w.id === selectedWarehouse)
 
-  // Nhập kho
+  // ------------------------------------------
+  // Mở modal Nhập kho mới
+  // ------------------------------------------
   const handleImport = () => {
     setEditingProduct(null)
     setModalType('import')
-    setFormData({ code: '', name: '', unit: '', quantity: '', priceIn: '', priceOut: '', weight: '', location: '', locationImage: '', productImage: '', importDate: new Date().toISOString().split('T')[0] })
+    setFormData({ code: '', name: '', unit: '', quantity: '', priceIn: '', priceOut: '', weight: '', weightUnit: 'kg', location: '', locationImage: '', productImage: '', importDate: new Date().toISOString().split('T')[0] })
     setProductImageFile(null)
     setLocationImageFile(null)
     setIsModalOpen(true)
   }
 
-  // Xuất kho
+  // ------------------------------------------
+  // Mở modal Xuất kho
+  // ------------------------------------------
   const handleExport = () => {
     setModalType('export')
     setExportCodeInput('')
@@ -94,11 +118,21 @@ export default function WarehousePage() {
     setIsModalOpen(true)
   }
 
-  // Tìm sản phẩm khi nhập mã
+  // ------------------------------------------
+  // Mở modal Nhập Thêm (cộng dồn số lượng cho SP đã có)
+  // ------------------------------------------
+  const handleAddMore = () => {
+    setModalType('addmore')
+    setAddMoreCodeInput('')
+    setAddMoreProduct(null)
+    setAddMoreQuantity(0)
+    setIsModalOpen(true)
+  }
+
+  // Tìm sản phẩm khi nhập mã xuất kho
   const handleSearchExportCode = (code: string) => {
     const upperCode = code.toUpperCase()
     setExportCodeInput(upperCode)
-
     const product = products.find(p => p.code === upperCode)
     if (product) {
       setFoundProduct(product)
@@ -111,6 +145,20 @@ export default function WarehousePage() {
     }
   }
 
+  // Tìm sản phẩm khi nhập mã để nhập thêm
+  const handleSearchAddMoreCode = (code: string) => {
+    const upperCode = code.toUpperCase()
+    setAddMoreCodeInput(upperCode)
+    const product = products.find(p => p.code === upperCode)
+    if (product) {
+      setAddMoreProduct(product)
+      setAddMoreQuantity(0)
+    } else {
+      setAddMoreProduct(null)
+      setAddMoreQuantity(0)
+    }
+  }
+
   // Xác nhận xuất kho
   const handleConfirmExport = async () => {
     if (!foundProduct) { alert('Không tìm thấy sản phẩm!'); return }
@@ -119,11 +167,8 @@ export default function WarehousePage() {
       alert(`Số lượng tồn kho không đủ! Hiện có: ${foundProduct.quantity} ${foundProduct.unit}`)
       return
     }
-
-    // Cập nhật số lượng trong DB
+    setIsSaving(true)
     await updateProduct(foundProduct.id, { quantity: foundProduct.quantity - exportQuantity })
-
-    // Log lịch sử xuất kho
     await addHistoryEntry({
       date: new Date().toLocaleDateString('vi-VN'),
       time: new Date().toLocaleTimeString('vi-VN'),
@@ -135,9 +180,33 @@ export default function WarehousePage() {
       quantity: exportQuantity,
       details: `Xuất ${exportQuantity} ${foundProduct.unit}, giá ${exportPrice.toLocaleString('vi-VN')}đ`,
     })
-
     alert(`Đã xuất ${exportQuantity} ${foundProduct.unit} ${foundProduct.name}`)
     setIsModalOpen(false)
+    setIsSaving(false)
+    await loadProducts(selectedWarehouse)
+  }
+
+  // Xác nhận nhập thêm số lượng
+  const handleConfirmAddMore = async () => {
+    if (!addMoreProduct) { alert('Không tìm thấy sản phẩm!'); return }
+    if (addMoreQuantity <= 0) { alert('Số lượng nhập thêm phải lớn hơn 0!'); return }
+    setIsSaving(true)
+    const newQty = addMoreProduct.quantity + addMoreQuantity
+    await updateProduct(addMoreProduct.id, { quantity: newQty })
+    await addHistoryEntry({
+      date: new Date().toLocaleDateString('vi-VN'),
+      time: new Date().toLocaleTimeString('vi-VN'),
+      warehouse: currentWarehouse?.name || '',
+      productCode: addMoreProduct.code,
+      productName: addMoreProduct.name,
+      userName: user?.name || user?.username || '',
+      action: 'Nhập kho',
+      quantity: addMoreQuantity,
+      details: `Nhập thêm ${addMoreQuantity} ${addMoreProduct.unit} (tồn trước: ${addMoreProduct.quantity}, tồn sau: ${newQty})`,
+    })
+    alert(`Đã nhập thêm ${addMoreQuantity} ${addMoreProduct.unit} vào ${addMoreProduct.name}. Tồn kho mới: ${newQty}`)
+    setIsModalOpen(false)
+    setIsSaving(false)
     await loadProducts(selectedWarehouse)
   }
 
@@ -153,6 +222,7 @@ export default function WarehousePage() {
       priceIn: product.priceIn,
       priceOut: product.priceOut,
       weight: product.weight,
+      weightUnit: product.weightUnit || 'kg',
       location: product.location,
       locationImage: product.locationImage,
       productImage: product.productImage || '',
@@ -163,7 +233,7 @@ export default function WarehousePage() {
     setIsModalOpen(true)
   }
 
-  // Xóa sản phẩm (soft delete trong DB)
+  // Xóa sản phẩm (soft delete)
   const handleDelete = async (productId: number) => {
     if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
       await deleteProduct(productId)
@@ -177,6 +247,12 @@ export default function WarehousePage() {
       alert('Vui lòng điền đầy đủ thông tin bắt buộc!')
       return
     }
+    if (isDuplicateCode) {
+      alert('Mã hàng đã tồn tại trong kho này! Vui lòng dùng mã khác.')
+      return
+    }
+
+    setIsSaving(true)
 
     // Upload ảnh nếu có file mới
     let productImageUrl = formData.productImage
@@ -220,33 +296,29 @@ export default function WarehousePage() {
         details: `Nhập ${formData.quantity} ${formData.unit}, giá ${Number(formData.priceIn).toLocaleString('vi-VN')}đ`,
       })
     }
+    setIsSaving(false)
     setIsModalOpen(false)
     await loadProducts(selectedWarehouse)
   }
 
-  // Xử lý upload ảnh vị trí (preview + lưu file)
+  // Xử lý upload ảnh vị trí
   const handleLocationImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       setLocationImageFile(file)
-      // Preview bằng base64 tạm thời
       const reader = new FileReader()
-      reader.onloadend = () => {
-        setFormData({ ...formData, locationImage: reader.result as string })
-      }
+      reader.onloadend = () => { setFormData({ ...formData, locationImage: reader.result as string }) }
       reader.readAsDataURL(file)
     }
   }
 
-  // Xử lý upload ảnh sản phẩm (preview + lưu file)
+  // Xử lý upload ảnh sản phẩm
   const handleProductImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       setProductImageFile(file)
       const reader = new FileReader()
-      reader.onloadend = () => {
-        setFormData({ ...formData, productImage: reader.result as string })
-      }
+      reader.onloadend = () => { setFormData({ ...formData, productImage: reader.result as string }) }
       reader.readAsDataURL(file)
     }
   }
@@ -254,6 +326,9 @@ export default function WarehousePage() {
   if (!user) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>
   }
+
+  const canImport = user?.isAdmin || (Array.isArray(user?.chucNang) ? user.chucNang : []).includes('nhap-kho')
+  const canExport = user?.isAdmin || (Array.isArray(user?.chucNang) ? user.chucNang : []).includes('xuat-kho')
 
   return (
     <div className="flex">
@@ -301,7 +376,7 @@ export default function WarehousePage() {
               currentWarehouse?.color === 'purple' ? 'border-l-purple-600' : 'border-l-green-600'
             }`}>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <CardTitle className={`flex items-center gap-2 ${
                   currentWarehouse?.color === 'blue' ? 'text-blue-600' :
                   currentWarehouse?.color === 'orange' ? 'text-orange-500' :
@@ -310,14 +385,20 @@ export default function WarehousePage() {
                   {currentWarehouse && <currentWarehouse.icon className="w-5 h-5" />}
                   {currentWarehouse?.name}
                 </CardTitle>
-                <div className="flex gap-2">
-                  {(user?.isAdmin || (Array.isArray(user?.chucNang) ? user.chucNang : []).includes('nhap-kho')) && (
+                <div className="flex gap-2 flex-wrap">
+                  {canImport && (
                     <Button onClick={handleImport} className="bg-green-600 text-white hover:bg-green-700">
                       <LogIn className="h-4 w-4 mr-2" />
                       Nhập Kho
                     </Button>
                   )}
-                  {(user?.isAdmin || (Array.isArray(user?.chucNang) ? user.chucNang : []).includes('xuat-kho')) && (
+                  {canImport && (
+                    <Button onClick={handleAddMore} className="bg-blue-600 text-white hover:bg-blue-700">
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Nhập Thêm
+                    </Button>
+                  )}
+                  {canExport && (
                     <Button onClick={handleExport} className="bg-orange-500 text-white hover:bg-orange-600">
                       <LogOut className="h-4 w-4 mr-2" />
                       Xuất Kho
@@ -349,12 +430,14 @@ export default function WarehousePage() {
                       <th className="text-right py-3 px-4 font-semibold text-gray-700">Số Lượng</th>
                       <th className="text-right py-3 px-4 font-semibold text-gray-700">Giá Nhập</th>
                       <th className="text-right py-3 px-4 font-semibold text-gray-700">Giá Xuất</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Trọng Lượng</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Khối Lượng</th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Vị Trí</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredItems.length === 0 ? (
+                    {loading ? (
+                      <tr><td colSpan={8} className="text-center py-8 text-gray-500">Đang tải...</td></tr>
+                    ) : filteredItems.length === 0 ? (
                       <tr>
                         <td colSpan={8} className="text-center py-8 text-gray-500">
                           Không có sản phẩm nào
@@ -380,7 +463,7 @@ export default function WarehousePage() {
                             {item.priceOut.toLocaleString('vi-VN')} đ
                           </td>
                           <td className="py-3 px-4 text-right text-gray-600">
-                            {item.weight} kg
+                            {item.weight} {item.weightUnit || 'kg'}
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
@@ -399,329 +482,394 @@ export default function WarehousePage() {
             </CardContent>
           </Card>
 
-          {/* Modal Form */}
-          {isModalOpen && (
+          {/* ============================================================ */}
+          {/* MODAL - Nhập Kho Mới / Sửa Sản Phẩm                          */}
+          {/* ============================================================ */}
+          {isModalOpen && modalType === 'import' && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className={`bg-white rounded-2xl p-6 w-full shadow-2xl max-h-[90vh] overflow-y-auto ${modalType === 'export' ? 'max-w-5xl' : 'max-w-4xl'}`}>
+              <div className="bg-white rounded-2xl p-6 w-full max-w-4xl shadow-2xl max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-gray-800">
-                    {modalType === 'export' ? 'Xuất Kho' : (editingProduct ? 'Sửa Sản Phẩm' : 'Nhập Kho')}
+                    {editingProduct ? 'Sửa Sản Phẩm' : 'Nhập Kho'}
                   </h2>
                   <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-gray-100 rounded">
                     <X className="w-5 h-5 text-gray-500" />
                   </button>
                 </div>
 
-                {modalType === 'export' ? (
-                  <div className="space-y-4">
-                    {/* Input mã hàng */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Nhập mã hàng cần xuất</label>
-                      <Input
-                        value={exportCodeInput}
-                        onChange={(e) => handleSearchExportCode(e.target.value)}
-                        placeholder="Nhập mã hàng (VD: VT001)"
-                        className="border-2 text-xl font-bold tracking-wider"
-                        style={{ fontFamily: 'monospace', textTransform: 'uppercase' }}
-                        autoFocus
-                      />
-                    </div>
-
-                    {/* Nếu không tìm thấy */}
-                    {exportCodeInput && !foundProduct && (
-                      <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-center">
-                        <p className="text-red-600 font-medium">❌ Không tìm thấy sản phẩm có mã "{exportCodeInput}"</p>
-                      </div>
-                    )}
-
-                    {/* Nếu tìm thấy - Hiển thị 2 cột */}
-                    {foundProduct && (
-                      <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50">
-                        <p className="text-green-600 font-medium mb-4">✓ Tìm thấy sản phẩm</p>
-                        
-                        {/* 2 cột: TTSP và Xuất */}
-                        <div className="grid md:grid-cols-2 gap-6">
-                          {/* Cột 1: TTSP */}
-                          <div className="bg-white rounded-lg p-4 border-2">
-                            <h3 className="font-bold text-blue-600 mb-3 text-lg border-b pb-2">THÔNG TIN SẢN PHẨM</h3>
-                            <div className="space-y-2 text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Mã hàng:</span>
-                                <span className="font-mono font-bold text-blue-600">{foundProduct.code}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Tên hàng:</span>
-                                <span className="font-medium">{foundProduct.name}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Đơn vị tính:</span>
-                                <span>{foundProduct.unit}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Tồn kho:</span>
-                                <span className="font-bold text-green-600">{foundProduct.quantity.toLocaleString()} {foundProduct.unit}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Giá nhập:</span>
-                                <span>{foundProduct.priceIn.toLocaleString('vi-VN')} đ</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Giá xuất:</span>
-                                <span className="font-medium">{foundProduct.priceOut.toLocaleString('vi-VN')} đ</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Trọng lượng:</span>
-                                <span>{foundProduct.weight} kg</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Vị trí:</span>
-                                <span>{foundProduct.location}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-gray-500">Ngày nhập:</span>
-                                <span>{foundProduct.importDate}</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Cột 2: Xuất */}
-                          <div className="bg-white rounded-lg p-4 border-2 border-orange-200">
-                            <h3 className="font-bold text-orange-600 mb-3 text-lg border-b pb-2">THÔNG TIN XUẤT KHO</h3>
-                            
-                            {/* Ảnh sản phẩm */}
-                            {foundProduct.locationImage && (
-                              <div className="mb-4">
-                                <img 
-                                  src={foundProduct.locationImage} 
-                                  alt={foundProduct.name}
-                                  className="w-full h-48 object-cover rounded-lg border-2"
-                                />
-                              </div>
-                            )}
-
-                            <div className="space-y-4">
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  Số lượng xuất * (Tồn: {foundProduct.quantity} {foundProduct.unit})
-                                </label>
-                                <Input
-                                  type="text"
-                                  inputMode="numeric"
-                                  value={exportQuantity || ''}
-                                  onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setExportQuantity(v ? parseInt(v) : 0) }}
-                                  className="border-2 text-lg"
-                                  max={foundProduct.quantity}
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Giá xuất (VNĐ)</label>
-                                <Input
-                                  type="text"
-                                  inputMode="numeric"
-                                  value={exportPrice ? exportPrice.toLocaleString('vi-VN') : ''}
-                                  onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setExportPrice(v ? parseInt(v) : 0) }}
-                                  className="border-2 text-lg"
-                                />
-                              </div>
-
-                              {/* Tổng giá trị */}
-                              <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                                <div className="flex justify-between items-center">
-                                  <span className="font-medium text-gray-700">Tổng giá trị:</span>
-                                  <span className="text-xl font-bold text-orange-600">
-                                    {(exportQuantity * exportPrice).toLocaleString('vi-VN')} đ
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Button xuất */}
-                        <div className="mt-4 flex gap-3">
-                          <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1">
-                            Hủy
-                          </Button>
-                          <Button onClick={handleConfirmExport} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white">
-                            <LogOut className="w-4 h-4 mr-2" />
-                            Xác Nhận Xuất Kho
-                          </Button>
-                        </div>
-                      </div>
+                <div className="space-y-4">
+                  {/* Mã hàng - có cảnh báo trùng */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Mã hàng *</label>
+                    <Input
+                      value={formData.code}
+                      onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                      className={`border-2 ${isDuplicateCode ? 'border-red-500 bg-red-50 focus:ring-red-400' : ''}`}
+                      disabled={!!editingProduct}
+                    />
+                    {isDuplicateCode && (
+                      <p className="text-red-600 text-xs mt-1 font-medium">⚠️ Mã hàng đã tồn tại trong kho này! Vui lòng sử dụng mã khác.</p>
                     )}
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Mã hàng *</label>
-                      <Input
-                        value={formData.code}
-                        onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                        className="border-2"
-                      />
-                    </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Tên hàng *</label>
-                      <Input
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="border-2"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Tên hàng *</label>
+                    <Input
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="border-2"
+                    />
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính *</label>
-                      <Input
-                        value={formData.unit}
-                        onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                        className="border-2"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Đơn vị tính *</label>
+                    <Input
+                      value={formData.unit}
+                      onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                      className="border-2"
+                    />
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        value={formData.quantity || ''}
-                        onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setFormData({ ...formData, quantity: v ? parseInt(v) : '' as any }) }}
-                        className="border-2"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Số lượng</label>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      value={formData.quantity || ''}
+                      onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setFormData({ ...formData, quantity: v ? parseInt(v) : '' as any }) }}
+                      className="border-2"
+                    />
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Giá nhập (VNĐ)</label>
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        value={formData.priceIn ? Number(formData.priceIn).toLocaleString('vi-VN') : ''}
-                        onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setFormData({ ...formData, priceIn: v ? parseInt(v) : '' as any }) }}
-                        className="border-2"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Giá nhập (VNĐ)</label>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      value={formData.priceIn ? Number(formData.priceIn).toLocaleString('vi-VN') : ''}
+                      onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setFormData({ ...formData, priceIn: v ? parseInt(v) : '' as any }) }}
+                      className="border-2"
+                    />
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Giá xuất (VNĐ)</label>
-                      <Input
-                        type="text"
-                        inputMode="numeric"
-                        value={formData.priceOut ? Number(formData.priceOut).toLocaleString('vi-VN') : ''}
-                        onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setFormData({ ...formData, priceOut: v ? parseInt(v) : '' as any }) }}
-                        className="border-2"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Giá xuất (VNĐ)</label>
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      value={formData.priceOut ? Number(formData.priceOut).toLocaleString('vi-VN') : ''}
+                      onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setFormData({ ...formData, priceOut: v ? parseInt(v) : '' as any }) }}
+                      className="border-2"
+                    />
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Trọng lượng (kg)</label>
+                  {/* Khối lượng + Đơn vị - 2 ô cạnh nhau */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Khối lượng</label>
+                    <div className="flex gap-2">
                       <Input
                         type="text"
                         inputMode="decimal"
                         value={formData.weight || ''}
                         onChange={(e) => { const v = e.target.value.replace(/[^0-9.]/g, ''); setFormData({ ...formData, weight: v ? parseFloat(v) : '' as any }) }}
-                        className="border-2"
+                        className="border-2 flex-1"
+                        placeholder="Nhập số lượng"
                       />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Vị trí</label>
                       <Input
-                        value={formData.location}
-                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                        className="border-2"
+                        type="text"
+                        value={formData.weightUnit}
+                        onChange={(e) => setFormData({ ...formData, weightUnit: e.target.value })}
+                        className="border-2 w-28"
+                        placeholder="Đơn vị"
                       />
                     </div>
+                    <p className="text-xs text-gray-400 mt-1">VD: kg, g, lít, ml, chai, lon, bao...</p>
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Ngày nhập kho</label>
-                      <Input
-                        type="date"
-                        value={formData.importDate}
-                        onChange={(e) => setFormData({ ...formData, importDate: e.target.value })}
-                        className="border-2"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Vị trí</label>
+                    <Input
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      className="border-2"
+                    />
+                  </div>
 
-                    {/* Ảnh sản phẩm - nằm dưới mục trọng lượng */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">📷 Ảnh sản phẩm</label>
-                      <div className="flex gap-4 items-start">
-                        <div className="flex-1">
-                          <label className="flex items-center gap-2 px-4 py-3 bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
-                            <Upload className="w-5 h-5 text-blue-500" />
-                            <span className="text-sm text-blue-600">Upload ảnh sản phẩm</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleProductImageUpload}
-                              className="hidden"
-                            />
-                          </label>
-                        </div>
-                        {formData.productImage && (
-                          <div className="relative">
-                            <img
-                              src={formData.productImage}
-                              alt="Ảnh sản phẩm"
-                              className="w-24 h-24 object-cover rounded-lg border-2 border-blue-200"
-                            />
-                            <button
-                              onClick={() => setFormData({ ...formData, productImage: '' })}
-                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Ngày nhập kho</label>
+                    <Input
+                      type="date"
+                      value={formData.importDate}
+                      onChange={(e) => setFormData({ ...formData, importDate: e.target.value })}
+                      className="border-2"
+                    />
+                  </div>
+
+                  {/* Ảnh sản phẩm */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">📷 Ảnh sản phẩm</label>
+                    <div className="flex gap-4 items-start">
+                      <div className="flex-1">
+                        <label className="flex items-center gap-2 px-4 py-3 bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
+                          <Upload className="w-5 h-5 text-blue-500" />
+                          <span className="text-sm text-blue-600">Upload ảnh sản phẩm</span>
+                          <input type="file" accept="image/*" onChange={handleProductImageUpload} className="hidden" />
+                        </label>
                       </div>
-                    </div>
-
-                    {/* Ảnh vị trí kho */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">📍 Ảnh vị trí</label>
-                      <div className="flex gap-4 items-start">
-                        <div className="flex-1">
-                          <label className="flex items-center gap-2 px-4 py-3 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
-                            <Upload className="w-5 h-5 text-gray-500" />
-                            <span className="text-sm text-gray-600">Upload ảnh vị trí</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleLocationImageUpload}
-                              className="hidden"
-                            />
-                          </label>
+                      {formData.productImage && (
+                        <div className="relative">
+                          <img src={formData.productImage} alt="Ảnh sản phẩm" className="w-24 h-24 object-cover rounded-lg border-2 border-blue-200" />
+                          <button
+                            onClick={() => setFormData({ ...formData, productImage: '' })}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
                         </div>
-                        {formData.locationImage && (
-                          <div className="relative">
-                            <img
-                              src={formData.locationImage}
-                              alt="Ảnh vị trí"
-                              className="w-24 h-24 object-cover rounded-lg border-2 border-gray-200"
-                            />
-                            <button
-                              onClick={() => setFormData({ ...formData, locationImage: '' })}
-                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 mt-6">
-                      <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1">
-                        Hủy
-                      </Button>
-                      <Button onClick={handleSave} className="flex-1 bg-green-600 hover:bg-green-700">
-                        <Save className="w-4 h-4 mr-2" />
-                        {editingProduct ? 'Cập Nhật' : 'Nhập Kho'}
-                      </Button>
+                      )}
                     </div>
                   </div>
-                )}
+
+                  {/* Ảnh vị trí kho */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">📍 Ảnh vị trí</label>
+                    <div className="flex gap-4 items-start">
+                      <div className="flex-1">
+                        <label className="flex items-center gap-2 px-4 py-3 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors">
+                          <Upload className="w-5 h-5 text-gray-500" />
+                          <span className="text-sm text-gray-600">Upload ảnh vị trí</span>
+                          <input type="file" accept="image/*" onChange={handleLocationImageUpload} className="hidden" />
+                        </label>
+                      </div>
+                      {formData.locationImage && (
+                        <div className="relative">
+                          <img src={formData.locationImage} alt="Ảnh vị trí" className="w-24 h-24 object-cover rounded-lg border-2 border-gray-200" />
+                          <button
+                            onClick={() => setFormData({ ...formData, locationImage: '' })}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 mt-6">
+                    <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1">
+                      Hủy
+                    </Button>
+                    <Button
+                      onClick={handleSave}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                      disabled={isSaving || isDuplicateCode}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {isSaving ? 'Đang lưu...' : (editingProduct ? 'Cập Nhật' : 'Nhập Kho')}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ============================================================ */}
+          {/* MODAL - Xuất Kho                                              */}
+          {/* ============================================================ */}
+          {isModalOpen && modalType === 'export' && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-5xl shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-800">Xuất Kho</h2>
+                  <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-gray-100 rounded">
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nhập mã hàng cần xuất</label>
+                    <Input
+                      value={exportCodeInput}
+                      onChange={(e) => handleSearchExportCode(e.target.value)}
+                      placeholder="Nhập mã hàng (VD: VT001)"
+                      className="border-2 text-xl font-bold tracking-wider"
+                      style={{ fontFamily: 'monospace', textTransform: 'uppercase' }}
+                      autoFocus
+                    />
+                  </div>
+
+                  {exportCodeInput && !foundProduct && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-center">
+                      <p className="text-red-600 font-medium">❌ Không tìm thấy sản phẩm có mã "{exportCodeInput}"</p>
+                    </div>
+                  )}
+
+                  {foundProduct && (
+                    <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50">
+                      <p className="text-green-600 font-medium mb-4">✓ Tìm thấy sản phẩm</p>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="bg-white rounded-lg p-4 border-2">
+                          <h3 className="font-bold text-blue-600 mb-3 text-lg border-b pb-2">THÔNG TIN SẢN PHẨM</h3>
+                          <div className="space-y-2 text-sm">
+                            {[
+                              ['Mã hàng', foundProduct.code],
+                              ['Tên hàng', foundProduct.name],
+                              ['Đơn vị tính', foundProduct.unit],
+                              ['Tồn kho', `${foundProduct.quantity.toLocaleString()} ${foundProduct.unit}`],
+                              ['Giá nhập', `${foundProduct.priceIn.toLocaleString('vi-VN')} đ`],
+                              ['Giá xuất', `${foundProduct.priceOut.toLocaleString('vi-VN')} đ`],
+                              ['Khối lượng', `${foundProduct.weight} ${foundProduct.weightUnit || 'kg'}`],
+                              ['Vị trí', foundProduct.location],
+                            ].map(([l, v]) => (
+                              <div key={l} className="flex justify-between">
+                                <span className="text-gray-500">{l}:</span>
+                                <span className="font-medium">{v}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg p-4 border-2 border-orange-200">
+                          <h3 className="font-bold text-orange-600 mb-3 text-lg border-b pb-2">THÔNG TIN XUẤT KHO</h3>
+                          {foundProduct.locationImage && (
+                            <div className="mb-4">
+                              <img src={foundProduct.locationImage} alt={foundProduct.name} className="w-full h-48 object-cover rounded-lg border-2" />
+                            </div>
+                          )}
+                          <div className="space-y-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Số lượng xuất * (Tồn: {foundProduct.quantity} {foundProduct.unit})
+                              </label>
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                value={exportQuantity || ''}
+                                onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setExportQuantity(v ? parseInt(v) : 0) }}
+                                className="border-2 text-lg"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">Giá xuất (VNĐ)</label>
+                              <Input
+                                type="text"
+                                inputMode="numeric"
+                                value={exportPrice ? exportPrice.toLocaleString('vi-VN') : ''}
+                                onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setExportPrice(v ? parseInt(v) : 0) }}
+                                className="border-2 text-lg"
+                              />
+                            </div>
+                            <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                              <div className="flex justify-between items-center">
+                                <span className="font-medium text-gray-700">Tổng giá trị:</span>
+                                <span className="text-xl font-bold text-orange-600">
+                                  {(exportQuantity * exportPrice).toLocaleString('vi-VN')} đ
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex gap-3">
+                        <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1">Hủy</Button>
+                        <Button onClick={handleConfirmExport} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white" disabled={isSaving}>
+                          <LogOut className="w-4 h-4 mr-2" />
+                          {isSaving ? 'Đang xử lý...' : 'Xác Nhận Xuất Kho'}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ============================================================ */}
+          {/* MODAL - Nhập Thêm Số Lượng (cho SP đã có sẵn trong kho)      */}
+          {/* ============================================================ */}
+          {isModalOpen && modalType === 'addmore' && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl p-6 w-full max-w-xl shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-gray-800">Nhập Thêm Số Lượng</h2>
+                  <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-gray-100 rounded">
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tìm sản phẩm theo mã hàng</label>
+                    <Input
+                      value={addMoreCodeInput}
+                      onChange={(e) => handleSearchAddMoreCode(e.target.value)}
+                      placeholder="Nhập mã hàng đã có trong kho"
+                      className="border-2 text-lg font-bold tracking-wider"
+                      style={{ fontFamily: 'monospace', textTransform: 'uppercase' }}
+                      autoFocus
+                    />
+                  </div>
+
+                  {addMoreCodeInput && !addMoreProduct && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-center">
+                      <p className="text-red-600 font-medium">❌ Không tìm thấy sản phẩm có mã "{addMoreCodeInput}" trong kho này</p>
+                    </div>
+                  )}
+
+                  {addMoreProduct && (
+                    <div className="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
+                      <p className="text-blue-600 font-medium mb-3">✓ Tìm thấy: <span className="font-bold">{addMoreProduct.name}</span></p>
+                      <div className="bg-white rounded-lg p-3 mb-4 space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Mã hàng:</span>
+                          <span className="font-mono font-bold text-blue-600">{addMoreProduct.code}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Đơn vị tính:</span>
+                          <span>{addMoreProduct.unit}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Tồn kho hiện tại:</span>
+                          <span className="font-bold text-green-600">{addMoreProduct.quantity.toLocaleString()} {addMoreProduct.unit}</span>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Số lượng nhập thêm *
+                        </label>
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          value={addMoreQuantity || ''}
+                          onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setAddMoreQuantity(v ? parseInt(v) : 0) }}
+                          className="border-2 text-lg"
+                        />
+                      </div>
+
+                      {addMoreQuantity > 0 && (
+                        <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium text-gray-700">Tồn kho sau khi nhập:</span>
+                            <span className="text-xl font-bold text-green-600">
+                              {(addMoreProduct.quantity + addMoreQuantity).toLocaleString()} {addMoreProduct.unit}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mt-4 flex gap-3">
+                        <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1">Hủy</Button>
+                        <Button onClick={handleConfirmAddMore} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white" disabled={isSaving}>
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          {isSaving ? 'Đang xử lý...' : 'Xác Nhận Nhập Thêm'}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}

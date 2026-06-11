@@ -66,6 +66,7 @@ export async function updateAccount(id: number, updates: Partial<Account>): Prom
   if (updates.chucVu !== undefined) dbUpdates.chuc_vu = updates.chucVu
   if (updates.chucNang !== undefined) dbUpdates.chuc_nang = updates.chucNang
   if (updates.status !== undefined) dbUpdates.status = updates.status
+  if (updates.ghiChu !== undefined) dbUpdates.ghi_chu = updates.ghiChu
 
   const { error } = await supabase
     .from('accounts')
@@ -133,6 +134,7 @@ export async function createProduct(product: Omit<Product, 'id'> & { warehouseId
       price_in: product.priceIn,
       price_out: product.priceOut,
       weight: product.weight,
+      weight_unit: product.weightUnit || 'kg',
       location: product.location,
       location_image_url: product.locationImage || null,
       product_image_url: product.productImage || null,
@@ -154,6 +156,7 @@ export async function updateProduct(id: number, updates: Partial<Product>): Prom
   if (updates.priceIn !== undefined) dbUpdates.price_in = updates.priceIn
   if (updates.priceOut !== undefined) dbUpdates.price_out = updates.priceOut
   if (updates.weight !== undefined) dbUpdates.weight = updates.weight
+  if (updates.weightUnit !== undefined) dbUpdates.weight_unit = updates.weightUnit
   if (updates.location !== undefined) dbUpdates.location = updates.location
   if (updates.locationImage !== undefined) dbUpdates.location_image_url = updates.locationImage
   if (updates.productImage !== undefined) dbUpdates.product_image_url = updates.productImage
@@ -333,6 +336,7 @@ function mapAccountFromDB(row: any): Account {
     status: row.status || 'active',
     createdAt: row.created_at ? new Date(row.created_at).toISOString().split('T')[0] : '',
     isAdmin: row.is_admin || false,
+    ghiChu: row.ghi_chu || '',
   }
 }
 
@@ -345,6 +349,7 @@ function mapAccountToDB(acc: any): any {
     chuc_nang: acc.chucNang || ['xem-co-ban'],
     status: acc.status || 'active',
     is_admin: acc.isAdmin || false,
+    ghi_chu: acc.ghiChu || null,
   }
 }
 
@@ -358,6 +363,7 @@ function mapProductFromDB(row: any): Product {
     priceIn: row.price_in || 0,
     priceOut: row.price_out || 0,
     weight: parseFloat(row.weight) || 0,
+    weightUnit: row.weight_unit || 'kg',
     location: row.location || '',
     locationImage: row.location_image_url || '',
     productImage: row.product_image_url || '',
